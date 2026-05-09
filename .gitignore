@@ -1,0 +1,36 @@
+# Build artifacts
+.lake/
+lake-manifest.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# ML models and data (can be regenerated)
+*.pt
+*.pth
+training/data/rl*/
+training/data/collected*.jsonl
+
+# Environment
+.venv/
+venv/
+env/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.claude/
+
+# Session artifacts
+.copilot/
