@@ -6,7 +6,7 @@ This project focuses on enhancing Lean 4's automated tactics, specifically `grin
 
 ### Improved `grind` — `neural_grind`
 
-The `neural_grind` tactic replaces grind's native split-candidate heuristic with a lightweight MLP model (~74,500 parameters, <1ms inference) that ranks branching options by predicted proof efficiency.
+The `neural_grind` tactic replaces grind's native split-candidate heuristic with a lightweight MLP model (~1,00,000 parameters, <1ms inference) that ranks branching options by predicted proof efficiency.
 
 **Import:**
 ```lean
