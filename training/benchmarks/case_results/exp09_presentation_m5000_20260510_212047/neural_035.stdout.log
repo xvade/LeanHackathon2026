@@ -1,0 +1,2 @@
+info: [root]: lakefile.lean and lakefile.toml are both present; using lakefile.lean
+error: aesop_with_overrides: configuration file not found: /home/ec2-user/LeanHackathon/LeanHackathon2026/aesop_with_overrides/lakefile.toml

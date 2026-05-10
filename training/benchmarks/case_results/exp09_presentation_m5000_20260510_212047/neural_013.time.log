@@ -1,0 +1,2 @@
+Command exited with non-zero status 1
+neural case=013 real_s=0.27 user_s=0.24 sys_s=0.03 maxrss_kb=807268

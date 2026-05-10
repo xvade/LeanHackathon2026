@@ -1,0 +1,7 @@
+{"action":"fallback","reason":"below_margin","numCandidates":3,"thresholdMilli":5000,"anchor":3801211156800270153,"marginMilli":0}
+{"action":"fallback","reason":"below_margin","numCandidates":7,"thresholdMilli":5000,"anchor":14570183311479155647,"marginMilli":0}
+{"action":"fallback","reason":"below_margin","numCandidates":5,"thresholdMilli":5000,"anchor":5752857433904085474,"marginMilli":0}
+{"action":"fallback","reason":"below_margin","numCandidates":4,"thresholdMilli":5000,"anchor":5752857433904085474,"marginMilli":0}
+{"action":"fallback","reason":"below_margin","numCandidates":3,"thresholdMilli":5000,"anchor":11647125514489376921,"marginMilli":1401}
+{"action":"model","reason":"override","numCandidates":1,"thresholdMilli":5000,"anchor":3801211156800270153,"marginMilli":1000000000}
+{"action":"model","reason":"override","numCandidates":1,"thresholdMilli":5000,"anchor":3801211156800270153,"marginMilli":1000000000}
