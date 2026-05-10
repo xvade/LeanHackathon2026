@@ -27,8 +27,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent
 ENV_FILE = ROOT / ".env"
-INPUT = ROOT / "data" / "lean_workbook.json"
-OUTPUT = ROOT / "workbook_grind_solved_verified.jsonl"
+INPUT = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "data" / "lean_workbook.json"
+OUTPUT = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "workbook_grind_solved_verified.jsonl"
+LIMIT = int(sys.argv[3]) if len(sys.argv) > 3 else None
 SPLIT = "lean_workbook_plus"
 
 # UTF-8 stdout so progress lines containing Lean's unicode never crash.
@@ -42,51 +43,60 @@ for _line in ENV_FILE.read_text().splitlines():
         _k, _v = _line.split("=", 1)
         os.environ.setdefault(_k.strip(), _v.strip())
 
-API_KEY = os.environ["AXLE_API_KEY"]
-API_URL = os.environ["AXLE_API_URL"]
-ENVIRONMENT = os.environ["AXLE_ENVIRONMENT"]
+API_KEY = os.environ.get("AXLE_API_KEY")
+API_URL = os.environ.get("AXLE_API_URL")
+ENVIRONMENT = os.environ.get("AXLE_ENVIRONMENT")
 
-CONCURRENCY = 8
+if not API_KEY or not API_URL or not ENVIRONMENT:
+    print("Error: AXLE credentials not found in environment or .env file.")
+    sys.exit(1)
+
+CONCURRENCY = 32
 TIMEOUT_S = 30.0
 
 # Cascading grind variants tried per problem, in order.
 VARIANTS = ["by grind", "by grind only", "by grind [simp]"]
 
-# Match `:= by sorry` (with arbitrary whitespace) at end of statement.
-SORRY_RE = re.compile(r":=\s*by\s+sorry\s*\Z")
+# Match `:= by sorry` or `:= by` at end of statement.
+SORRY_RE = re.compile(r":=\s*by(?:\s+sorry)?\s*\Z")
 
 
 def make_snippet(formal_statement: str, variant: str) -> str:
-    """Replace the trailing `:= by sorry` with `:= <variant>`."""
+    """Replace the trailing `:= by sorry` or `:= by` with `:= <variant>`."""
     body = SORRY_RE.sub(f":= {variant}", formal_statement.rstrip())
+    if "import Mathlib" in body:
+        return f"{body}\n"
     return f"import Mathlib\n\n{body}\n"
 
 
-def problem_id(formal_statement: str) -> str:
+def problem_id(formal_statement: str, rec_id: str = None) -> str:
     # statements start with `theorem lean_workbook_plus_NNN ...`
-    m = re.match(r"theorem\s+(\S+)", formal_statement)
-    return m.group(1) if m else ""
+    m = re.search(r"theorem\s+(\S+)", formal_statement)
+    if m:
+        return m.group(1)
+    return rec_id or "unknown"
 
 
 def load_existing_ids(path: Path) -> set[str]:
     if not path.exists():
         return set()
     out: set[str] = set()
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if not line.strip():
-            continue
-        try:
-            r = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if r.get("id"):
-            out.add(r["id"])
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if r.get("id"):
+                out.add(r["id"])
     return out
 
 
 async def try_solve(client, rec: dict, idx: int, total: int) -> dict | None:
     """Cascade through VARIANTS. Return solved record on first success, else None."""
-    pid = problem_id(rec["formal_statement"])
+    pid = problem_id(rec["formal_statement"], rec.get("id"))
     t_total = time.monotonic()
     for variant in VARIANTS:
         snippet = make_snippet(rec["formal_statement"], variant)
@@ -96,14 +106,15 @@ async def try_solve(client, rec: dict, idx: int, total: int) -> dict | None:
                 environment=ENVIRONMENT,
                 timeout_seconds=TIMEOUT_S,
             )
-        except Exception:
+        except Exception as e:
+            # print(f"Error checking {pid}: {e}")
             continue
         if resp.okay:
             elapsed = time.monotonic() - t_total
             print(f"[{idx + 1}/{total}] OK ({elapsed:.1f}s) {pid}  variant: {variant}", flush=True)
             return {
                 "id": pid,
-                "split": rec["split"],
+                "split": rec.get("split", SPLIT),
                 "natural_language_statement": rec.get("natural_language_statement"),
                 "answer": rec.get("answer"),
                 "tags": rec.get("tags") or [],
@@ -117,19 +128,26 @@ async def try_solve(client, rec: dict, idx: int, total: int) -> dict | None:
 
 
 async def main() -> None:
-    limit = int(sys.argv[1]) if len(sys.argv) > 1 else None
-
-    with INPUT.open("r", encoding="utf-8") as f:
-        data = json.load(f)
-    problems = [r for r in data if r["split"] == SPLIT]
-
+    print(f"Loading input from {INPUT}...")
+    
     done_ids = load_existing_ids(OUTPUT)
-    todo = [r for r in problems if problem_id(r["formal_statement"]) not in done_ids]
-    if limit is not None:
-        todo = todo[:limit]
+    
+    todo = []
+    with INPUT.open("r", encoding="utf-8") as f:
+        for line in f:
+            if not line.strip(): continue
+            try:
+                rec = json.loads(line)
+                if problem_id(rec["formal_statement"], rec.get("id")) not in done_ids:
+                    todo.append(rec)
+            except: continue
+    
+    if LIMIT is not None:
+        todo = todo[:LIMIT]
+    
     print(
-        f"split={SPLIT}  total={len(problems)}  already-solved={len(done_ids)}  "
-        f"to-try={len(todo)}  env={ENVIRONMENT}  variants={VARIANTS}",
+        f"total_to_try={len(todo)}  already-solved={len(done_ids)}  "
+        f"env={ENVIRONMENT}  variants={VARIANTS}  concurrency={CONCURRENCY}",
         flush=True,
     )
     if not todo:

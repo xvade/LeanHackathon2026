@@ -7,8 +7,9 @@ Usage:
 Protocol (line-oriented JSON over stdin/stdout):
   Lean writes one JSON line per split decision:
     {"goalFeatures": {...}, "candidates": [{anchor, exprText, numCases, isRec, source}, ...]}
-  This server responds with one line containing the chosen anchor as a decimal integer:
-    12345678901234
+  This server responds with one line containing the chosen anchor and top-1/top-2
+  score margin in milli-logits:
+    12345678901234 271
 
 The server loops until stdin is closed (EOF).
 """
@@ -49,6 +50,14 @@ def score_candidates(model: SplitRanker, req: dict) -> torch.Tensor:
         return model(numeric, text_ids, state_ids, grind_ids)
 
 
+def score_margin_milli(scores: torch.Tensor) -> int:
+    if scores.numel() < 2:
+        return 1_000_000_000
+    top = torch.topk(scores, k=2).values
+    margin = float(top[0].item() - top[1].item())
+    return max(0, int(round(margin * 1000)))
+
+
 def serve(args):
     model = load_model(args.model)
     # GRIND_TEMPERATURE > 0 enables stochastic sampling (for RL exploration).
@@ -68,12 +77,14 @@ def serve(args):
                 else:
                     best_idx = int(scores.argmax().item())
                 best_anchor = cands[best_idx]["anchor"]
+                margin_milli = score_margin_milli(scores)
             else:
                 best_anchor = 0
-            print(best_anchor, flush=True)
+                margin_milli = 0
+            print(f"{best_anchor} {margin_milli}", flush=True)
         except Exception as e:
             # On any error, print 0 (Lean falls back to heuristic)
-            print(0, flush=True)
+            print("0 0", flush=True)
             print(f"[serve.py error] {e}", file=sys.stderr, flush=True)
 
 

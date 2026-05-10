@@ -25,12 +25,34 @@ import sys
 from pathlib import Path
 
 import torch
+import importlib.util
+
 import torch.nn.functional as F
 from torch.optim import Adam
 
-sys.path.insert(0, str(Path(__file__).parent))
-from features import batch_numeric, batch_trigrams, context_trigrams, GRIND_STATE_MAX_EVENTS
-from model import SplitRanker
+TRAINING = Path(__file__).parent
+EXPERIMENTS = TRAINING / "experiments"
+
+
+def load_exp_modules(exp_dir: Path | None):
+    """Load features and model modules from an experiment dir (or base training/)."""
+    base = TRAINING
+    feat_path  = (exp_dir / "features.py") if exp_dir and (exp_dir / "features.py").exists() \
+                 else base / "features.py"
+    model_path = (exp_dir / "model.py")    if exp_dir and (exp_dir / "model.py").exists()    \
+                 else base / "model.py"
+
+    spec = importlib.util.spec_from_file_location("_rl_features", feat_path)
+    feat_mod = importlib.util.module_from_spec(spec)
+    sys.modules["features"] = feat_mod
+    spec.loader.exec_module(feat_mod)
+
+    spec = importlib.util.spec_from_file_location("_rl_model", model_path)
+    mod_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod_mod)
+
+    sys.modules.pop("features", None)
+    return feat_mod, mod_mod
 
 
 def normalize_record(record: dict) -> dict | None:
@@ -59,60 +81,71 @@ def normalize_record(record: dict) -> dict | None:
     return None
 
 
-def load_examples_rl(path: str, reward_success: float = 1.0,
+def load_examples_rl(path: str | list[str], reward_success: float = 1.0,
                      reward_failure: float = -1.0) -> list[dict]:
     """
     Load all decision steps from JSONL, labelled with step-count-scaled rewards.
     Both successful and failed proofs are included (both schemas accepted).
     Steps with < 2 candidates are skipped (no real choice was made).
+    Accepts a single path or a list of paths.
 
     Reward for success = reward_success / num_steps: shorter proofs score higher.
     Reward for failure = reward_failure (flat penalty regardless of steps taken).
     """
+    paths = [path] if isinstance(path, str) else path
     examples = []
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                record = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            record = normalize_record(record)
-            if record is None:
-                continue
-            steps = record.get("steps", [])
-            num_steps = max(len(steps), 1)
-            if record.get("outcome") == "success":
-                reward = reward_success / num_steps
-            else:
-                reward = reward_failure
-            for step in steps:
-                cands = step.get("candidates", [])
-                chosen = step.get("chosenAnchor")
-                if len(cands) < 2 or chosen is None:
+    for path in paths:
+        with open(path) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
                     continue
-                # anchor may be int or string — compare as strings for safety
-                chosen_s = str(chosen)
-                target = next(
-                    (i for i, c in enumerate(cands) if str(c["anchor"]) == chosen_s),
-                    None,
-                )
-                if target is None:
+                try:
+                    record = json.loads(line)
+                except json.JSONDecodeError:
                     continue
-                examples.append({
-                    "goalFeatures": step["goalFeatures"],
-                    "candidates":   cands,
-                    "target":       target,
-                    "reward":       reward,
-                    "statePP":      step.get("statePP", []),
-                    "grindState":   step.get("grindState", []),
-                })
+                record = normalize_record(record)
+                if record is None:
+                    continue
+                steps = record.get("steps", [])
+                num_steps = max(len(steps), 1)
+                if record.get("outcome") == "success":
+                    reward = reward_success / num_steps
+                else:
+                    reward = reward_failure
+                for step in steps:
+                    cands = step.get("candidates", [])
+                    chosen = step.get("chosenAnchor")
+                    if len(cands) < 2 or chosen is None:
+                        continue
+                    chosen_s = str(chosen)
+                    target = next(
+                        (i for i, c in enumerate(cands) if str(c["anchor"]) == chosen_s),
+                        None,
+                    )
+                    if target is None:
+                        continue
+                    examples.append({
+                        "goalFeatures": step["goalFeatures"],
+                        "candidates":   cands,
+                        "target":       target,
+                        "reward":       reward,
+                        "statePP":      step.get("statePP", []),
+                        "grindState":   step.get("grindState", []),
+                    })
     return examples
 
 
 def train_rl(args) -> None:
+    exp_dir = Path(args.exp) if args.exp else EXPERIMENTS / "exp08_num_pool_counts"
+    feat_mod, mod_mod = load_exp_modules(exp_dir)
+    batch_numeric = feat_mod.batch_numeric
+    has_text      = hasattr(feat_mod, "batch_trigrams")
+    has_context   = hasattr(feat_mod, "context_trigrams")
+    grind_max     = getattr(feat_mod, "GRIND_STATE_MAX_EVENTS", 30)
+    SplitRanker   = mod_mod.SplitRanker
+    print(f"Experiment: {exp_dir.name}  text={has_text}  context={has_context}", flush=True)
+
     print(f"Loading data from {args.data} …", flush=True)
     examples = load_examples_rl(
         args.data,
@@ -157,17 +190,27 @@ def train_rl(args) -> None:
             if abs(advantage) < 1e-6:
                 continue
 
-            cands    = ex["candidates"]
-            goal     = ex["goalFeatures"]
-            target   = ex["target"]
+            cands  = ex["candidates"]
+            goal   = ex["goalFeatures"]
+            target = ex["target"]
 
-            numeric   = batch_numeric(cands, goal).to(device)
-            text_ids  = batch_trigrams(cands).to(device)
-            state_ids = context_trigrams(ex.get("statePP", [])).to(device)
-            grind_ids = context_trigrams(ex.get("grindState", []),
-                                         max_events=GRIND_STATE_MAX_EVENTS).to(device)
+            try:
+                try:
+                    numeric = batch_numeric(cands, goal, ex.get("grindState", [])).to(device)
+                except TypeError:
+                    numeric = batch_numeric(cands, goal).to(device)
+                kwargs = {"numeric": numeric}
+                if has_text:
+                    kwargs["text_ids"] = feat_mod.batch_trigrams(cands).to(device)
+                if has_context:
+                    kwargs["state_ids"] = feat_mod.context_trigrams(
+                        ex.get("statePP", [])).to(device)
+                    kwargs["grind_ids"] = feat_mod.context_trigrams(
+                        ex.get("grindState", []), max_events=grind_max).to(device)
+                scores = model(**kwargs)   # (N,)
+            except Exception:
+                continue
 
-            scores    = model(numeric, text_ids, state_ids, grind_ids)   # (N,)
             log_probs = F.log_softmax(scores, dim=0)      # (N,)
 
             # REINFORCE: maximise E[log π(a) * advantage]; average over batch
@@ -199,9 +242,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="REINFORCE policy gradient training for SplitRanker."
     )
-    parser.add_argument("--data",           required=True, help="JSONL log file")
+    parser.add_argument("--data",           required=True, action="append",
+                        help="JSONL data file (repeatable for multiple files)")
     parser.add_argument("--out",            required=True, help="Output model checkpoint")
     parser.add_argument("--init",           default=None,  help="Warm-start checkpoint")
+    parser.add_argument("--exp",            default=None,
+                        help="Experiment dir for features/model (default: exp08_num_pool_counts)")
     parser.add_argument("--epochs",         type=int,   default=30)
     parser.add_argument("--lr",             type=float, default=1e-4)
     parser.add_argument("--reward-success", type=float, default=1.0)

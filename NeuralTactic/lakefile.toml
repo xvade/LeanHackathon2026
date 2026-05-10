@@ -14,6 +14,9 @@ name = "mathlib"
 scope = "leanprover-community"
 rev = "v4.30.0-rc2"
 
+[[require]]
+name = "aesop_with_overrides"
+path = "../aesop_with_overrides"
+
 [[lean_lib]]
 name = "NeuralTactic"
-moreLinkArgs = ["-Lnative", "-lclient"]

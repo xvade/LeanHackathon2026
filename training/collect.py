@@ -28,7 +28,6 @@ import os
 import re
 import subprocess
 import sys
-import tempfile
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
@@ -422,9 +421,9 @@ def run_batch(lean_file_str: str, log_file_str: str,
     if "GRIND_MODEL" in env and "GRIND_SERVE" not in env:
         serve_default = Path(__file__).parent / "serve.py"
         env["GRIND_SERVE"] = str(serve_default)
-    # Prepend the current Python's bin dir to PATH so that when Lean spawns
-    # `python3 serve.py`, it finds the same interpreter (conda/venv) that
-    # collect.py itself is running under — not the system /usr/bin/python3.
+    # Set GRIND_PYTHON so Lean's subprocess uses the conda/venv python explicitly.
+    # Also prepend to PATH as fallback for older code paths.
+    env["GRIND_PYTHON"] = sys.executable
     python_bin = str(Path(sys.executable).parent)
     env["PATH"] = python_bin + ":" + env.get("PATH", "")
 
@@ -439,12 +438,20 @@ def run_batch(lean_file_str: str, log_file_str: str,
             timeout=timeout,
         )
         duration = time.monotonic() - t0
+        # lake exits non-zero when individual theorems fail — that's expected.
+        # A real failure is when stderr contains an error other than the
+        # "lakefile.lean and lakefile.toml" coexistence warning.
+        stderr_clean = "\n".join(
+            l for l in proc.stderr.splitlines()
+            if "lakefile" not in l.lower() and l.strip()
+        )
+        hard_fail = proc.returncode != 0 and bool(stderr_clean)
         return {
             "lean_file": lean_file,
             "log_file": log_file,
-            "success": proc.returncode == 0,
+            "success": not hard_fail,
             "duration": duration,
-            "error": proc.stderr[:2000] if proc.returncode != 0 else None,
+            "error": stderr_clean[:2000] if hard_fail else None,
         }
     except subprocess.TimeoutExpired:
         duration = time.monotonic() - t0
@@ -575,13 +582,14 @@ def main() -> None:
         print("No examples found — nothing to do.")
         return
 
-    # Phase 3: batch into temporary Lean files
+    # Phase 3: batch into Lean files inside the project (so lake uses .olean cache)
     batch_size = args.batch_size
     batches = [
         all_examples[i:i + batch_size]
         for i in range(0, len(all_examples), batch_size)
     ]
-    tmpdir = Path(tempfile.mkdtemp(prefix="neural_collect_"))
+    tmpdir = project_root / ".collect_scratch"
+    tmpdir.mkdir(exist_ok=True)
     print(f"Writing {len(batches)} batch files to {tmpdir} …")
 
     batch_pairs: list[tuple[Path, Path]] = []

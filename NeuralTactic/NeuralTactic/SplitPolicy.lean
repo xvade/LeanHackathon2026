@@ -2,55 +2,235 @@
 `NeuralTactic.SplitPolicy` — neural split-candidate ranker.
 
 At each split decision `neuralSplitNext`:
-  1. Pretty-prints the current goal and every candidate expression.
-  2. Calls `scoreCandidate` (→ C FFI → Unix socket → server.py) to score them.
-  3. Currently delegates the actual split to `splitNext` regardless of scores.
+  1. Gets the candidate pool via `getSplitCandidateAnchors` (keeping the modified goal state).
+  2. Sends goalFeatures + candidates to serve.py via a persistent subprocess.
+  3. Uses the model's chosen anchor to call `splitCore` directly.
+  4. Falls back to grind's native split selection if the model is unavailable
+     or below the configured margin threshold.
 
-The scores are computed for real on every call but not yet used to override
-grind's split selection. The remaining work is using the model's argmax to call
-`splitCore` directly — blocked on the side-effect issue documented in
-`getSplitCandidateAnchors` vs `splitNext` interaction (see session notes).
+Environment variables:
+  GRIND_MODEL — path to the PyTorch checkpoint (.pt)
+  GRIND_SERVE — path to training/serve.py
+  GRIND_SERVE_NATIVE — set to 1 when GRIND_SERVE is a native executable
+  GRIND_NO_MODEL — set to 1 to skip model inference and use only the fallback
+  GRIND_MARGIN_MILLI — require model top-1/top-2 logit margin in milli-logits
+  GRIND_INCLUDE_EXPR_TEXT — set to 1 to send pretty-printed candidate terms
+  GRIND_DECISION_LOG — optional JSONL path for split-policy decision diagnostics
 -/
-import Lean.Meta.Tactic.Grind.Split
+import Lean.Elab.Tactic.Basic
+import Lean.Meta.Tactic.Grind.Main
+import Lean.Meta.Tactic.Grind.Finish
+import Lean.Meta.Tactic.Grind.EMatchAction
+import Lean.Meta.Tactic.Grind.Intro
 
-open Lean Meta
+open Lean Meta Elab Tactic Grind
 
 namespace NeuralTactic
 
--- ── Model scoring interface ───────────────────────────────────────────────────
+-- ---------------------------------------------------------------------------
+-- JSON helpers
+-- ---------------------------------------------------------------------------
 
-/--
-Score a (goal, candidate) pair by calling the inference server.
+private def jsonStr (s : String) : String :=
+  "\"" ++ (s.replace "\\" "\\\\" |>.replace "\"" "\\\"" |>.replace "\n" "\\n") ++ "\""
 
-The server (scripts/server.py) must be running:
-  python3 scripts/server.py &
+private def sourceTagStr (si : SplitInfo) : String :=
+  match si.source with
+  | .ematch _     => "ematch"  | .ext _        => "ext"
+  | .mbtc _ _ _   => "mbtc"    | .beta _       => "beta"
+  | .forallProp _ => "forallProp" | .existsProp _ => "existsProp"
+  | .input        => "input"   | .inj _        => "inj"
+  | .guard _      => "guard"
 
-Implemented in native/score_client.c via a Unix socket to /tmp/neural_grind.sock.
-Falls back to a length heuristic if the server is not reachable, so proofs still
-work even without the server (just with a weaker policy).
--/
-@[extern "lean_neural_score"]
-opaque scoreCandidate (goalPP : @& String) (candPP : @& String) : Float
+private def envFlag (name : String) : IO Bool := do
+  match ← IO.getEnv name with
+  | none => return false
+  | some v =>
+    return !(v == "" || v == "0" || v == "false" || v == "False" || v == "FALSE")
 
--- ── Policy action ─────────────────────────────────────────────────────────────
+private def modelDisabled : IO Bool := do
+  if ← envFlag "GRIND_NO_MODEL" then
+    return true
+  else
+    envFlag "NEURAL_GRIND_NO_MODEL"
 
-def neuralSplitNext (stopAtFirstFailure := true) (compress := true) : Grind.Action :=
+private def includeExprText : IO Bool :=
+  envFlag "GRIND_INCLUDE_EXPR_TEXT"
+
+private def marginThresholdMilli : IO Nat := do
+  match ← IO.getEnv "GRIND_MARGIN_MILLI" with
+  | some s =>
+    match s.trimAscii.toString.toNat? with
+    | some n => return n
+    | none   => return 0
+  | none => return 0
+
+-- ---------------------------------------------------------------------------
+-- Persistent model server subprocess
+-- ---------------------------------------------------------------------------
+
+private structure ModelServer where
+  stdinH  : IO.FS.Handle
+  stdoutH : IO.FS.Handle
+
+private structure ModelChoice where
+  anchor : UInt64
+  marginMilli : Option Nat
+
+private initialize neuralServerRef  : IO.Ref (Option ModelServer) ← IO.mkRef none
+private initialize neuralServerPath : IO.Ref String               ← IO.mkRef ""
+
+private def getOrStartServer : IO (Option ModelServer) := do
+  if ← modelDisabled then
+    return none
+  let some modelPath ← IO.getEnv "GRIND_MODEL" | return none
+  let some servePath ← IO.getEnv "GRIND_SERVE" | return none
+  let pythonBin ← do
+    match ← IO.getEnv "GRIND_PYTHON" with
+    | some p => pure p
+    | none   => pure "python3"
+  let nativeServe ← envFlag "GRIND_SERVE_NATIVE"
+  let currPath ← neuralServerPath.get
+  if currPath == modelPath then
+    if let some h := ← neuralServerRef.get then return some h
+  try
+    let cmd := if nativeServe then servePath else pythonBin
+    let args := if nativeServe then #[ "--model", modelPath ] else #[servePath, "--model", modelPath]
+    let child ← IO.Process.spawn {
+      cmd    := cmd,
+      args   := args,
+      stdin  := .piped,
+      stdout := .piped,
+      stderr := .inherit,
+    }
+    let srv : ModelServer := { stdinH := child.stdin, stdoutH := child.stdout }
+    neuralServerRef.set (some srv)
+    neuralServerPath.set modelPath
+    return some srv
+  catch _ => return none
+
+private def parseServerChoice (line : String) : ModelChoice :=
+  let fields := (line.trimAscii.toString.splitOn " ").filter (fun f => f != "")
+  match fields with
+  | anchorStr :: rest =>
+    let anchor := anchorStr.toNat?.map UInt64.ofNat |>.getD 0
+    let marginMilli :=
+      match rest with
+      | marginStr :: _ => marginStr.toNat?
+      | [] => none
+    { anchor := anchor, marginMilli := marginMilli }
+  | [] => { anchor := 0, marginMilli := none }
+
+private def queryServer (gfJson candsJson : String) : IO ModelChoice := do
+  let some srv ← getOrStartServer | return { anchor := 0, marginMilli := none }
+  try
+    let query := "{\"goalFeatures\":" ++ gfJson ++ ",\"candidates\":" ++ candsJson ++ ",\"statePP\":[],\"grindState\":[]}\n"
+    srv.stdinH.putStr query
+    srv.stdinH.flush
+    let line ← srv.stdoutH.getLine
+    return parseServerChoice line
+  catch _ =>
+    neuralServerRef.set none
+    return { anchor := 0, marginMilli := none }
+
+private def modelChoiceAllowed (choice : ModelChoice) (threshold : Nat) : Bool :=
+  choice.anchor != 0 &&
+    if threshold == 0 then
+      true
+    else
+      match choice.marginMilli with
+      | some margin => margin >= threshold
+      | none => false
+
+private def decisionLogLine
+    (action : String)
+    (reason : String)
+    (numCandidates : Nat)
+    (threshold : Nat)
+    (choice : ModelChoice) : String :=
+  "{\"action\":" ++ jsonStr action ++
+    ",\"reason\":" ++ jsonStr reason ++
+    ",\"numCandidates\":" ++ toString numCandidates ++
+    ",\"thresholdMilli\":" ++ toString threshold ++
+    ",\"anchor\":" ++ toString choice.anchor ++
+    ",\"marginMilli\":" ++
+      (match choice.marginMilli with
+       | some m => toString m
+       | none => "null") ++
+    "}"
+
+private def appendDecisionLog
+    (action : String)
+    (reason : String)
+    (numCandidates : Nat)
+    (threshold : Nat)
+    (choice : ModelChoice) : IO Unit := do
+  let some path ← IO.getEnv "GRIND_DECISION_LOG" | return
+  if path.trimAscii.toString == "" then
+    return
+  try
+    IO.FS.withFile path .append fun h => do
+      h.putStrLn (decisionLogLine action reason numCandidates threshold choice)
+  catch _ =>
+    return
+
+-- ---------------------------------------------------------------------------
+-- neuralSplitNext
+-- ---------------------------------------------------------------------------
+
+def neuralSplitNext (stopAtFirstFailure := true) (compress := true) : Action :=
   fun goal kna kp => do
-    -- Peek at candidate pool without consuming the modified goal state
-    let (anchors, _) ← Grind.GoalM.run goal Grind.getSplitCandidateAnchors
-    match anchors.candidates.toList with
-    | [] => (Grind.Action.splitNext stopAtFirstFailure compress) goal kna kp
-    | _ =>
-      -- Pretty-print goal and all candidates (text in, text out — no serialization)
-      let goalPP  ← Format.pretty <$> ppExpr (← goal.mvarId.getType)
-      let candPPs ← anchors.candidates.mapM fun c =>
-        Format.pretty <$> ppExpr c.e
-      -- Score every candidate via the server (real model inference happens here)
-      let _scores := candPPs.map (scoreCandidate goalPP)
-      -- TODO: use scores to call splitCore on the argmax instead of splitNext.
-      -- Blocked by the getSplitCandidateAnchors side-effect issue: calling it
-      -- before splitNext corrupts the candidate state. Fix requires either
-      -- saving/restoring GrindM state or accessing candidates without checkSplitStatus.
-      (Grind.Action.splitNext stopAtFirstFailure compress) goal kna kp
+    if ← modelDisabled then
+      appendDecisionLog "fallback" "model_disabled" 0 0 { anchor := 0, marginMilli := none }
+      (Action.splitNext stopAtFirstFailure compress) goal kna kp
+    else
+      let (anchors, goal') ← GoalM.run goal getSplitCandidateAnchors
+      if anchors.candidates.isEmpty then
+        appendDecisionLog "fallback" "no_candidates" 0 0 { anchor := 0, marginMilli := none }
+        kna goal'
+      else
+        -- goalFeatures JSON (one line, avoids multi-line `++` parse issues)
+        let gfJson := "{\"splitDepth\":" ++ toString goal'.split.num ++ ",\"assertedCount\":" ++ toString goal'.facts.size ++ ",\"ematchRounds\":" ++ toString goal'.ematch.num ++ ",\"splitTraceLen\":" ++ toString goal'.split.trace.length ++ ",\"numCandidates\":" ++ toString anchors.candidates.size ++ "}"
+
+        -- candidates JSON — build each entry as a local let, then return
+        let sendExprText ← includeExprText
+        let candJsons ← anchors.candidates.mapM fun c => do
+          let pp ← if sendExprText then Format.pretty <$> ppExpr c.e else pure ""
+          let gen := goal'.getGeneration c.e
+          let j := "{\"anchor\":" ++ toString c.anchor ++ ",\"exprText\":" ++ jsonStr pp ++ ",\"numCases\":" ++ toString c.numCases ++ ",\"isRec\":" ++ (if c.isRec then "true" else "false") ++ ",\"source\":" ++ jsonStr (sourceTagStr c.c) ++ ",\"generation\":" ++ toString gen ++ "}"
+          pure j
+        let candsArr := "[" ++ ",".intercalate candJsons.toList ++ "]"
+
+        -- Query model
+        let modelChoice ← queryServer gfJson candsArr
+        let marginThreshold ← marginThresholdMilli
+        let allowed := modelChoiceAllowed modelChoice marginThreshold
+        let modelCand? :=
+          if allowed then
+            anchors.candidates.find? (·.anchor == modelChoice.anchor)
+          else none
+
+        -- Pick the model candidate, or fall back to native grind selection.
+        match modelCand? with
+        | none =>
+          let reason :=
+            if modelChoice.anchor == 0 then
+              "no_model_choice"
+            else if !allowed then
+              "below_margin"
+            else
+              "anchor_not_found"
+          appendDecisionLog "fallback" reason anchors.candidates.size marginThreshold modelChoice
+          (Action.splitNext stopAtFirstFailure compress) goal' kna kp
+        | some bestCand =>
+          appendDecisionLog "model" "override" anchors.candidates.size marginThreshold modelChoice
+          let gen    := goal'.getGeneration bestCand.e
+          let genNew := if bestCand.numCases > 1 || bestCand.isRec then gen + 1 else gen
+          let step :=
+            Action.splitCore bestCand.c bestCand.numCases bestCand.isRec
+                             stopAtFirstFailure compress >>
+            Action.intros genNew >>
+            Action.assertAll
+          step goal' kna kp
 
 end NeuralTactic

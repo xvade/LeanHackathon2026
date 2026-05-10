@@ -46,12 +46,17 @@ def run_collect(args, iteration: int, out_path: Path, model_path: Path) -> dict:
     """Run collect.py for one iteration. Returns summary stats."""
     env = os.environ.copy()
 
+    # Always set GRIND_PYTHON so Lean's subprocess uses the conda python
+    env["GRIND_PYTHON"] = sys.executable
+
     # Iteration 0: bootstrap with heuristic (no model)
     if iteration > 0 and model_path.exists():
-        env["GRIND_MODEL"] = str(model_path)
+        env["GRIND_MODEL"]       = str(model_path)
+        env["GRIND_SERVE"]       = args.serve
         env["GRIND_TEMPERATURE"] = str(args.temperature)
     else:
-        env.pop("GRIND_MODEL", None)
+        env.pop("GRIND_MODEL",       None)
+        env.pop("GRIND_SERVE",       None)
         env.pop("GRIND_TEMPERATURE", None)
 
     cmd = [
@@ -109,6 +114,7 @@ def run_train_rl(args, data_path: Path, model_path: Path) -> None:
         str(SCRIPT_DIR / "train_rl.py"),
         "--data",           str(data_path),
         "--out",            str(model_path),
+        "--exp",            args.exp,
         "--epochs",         str(args.epochs),
         "--lr",             str(args.lr),
         "--reward-success", str(args.reward_success),
@@ -117,13 +123,14 @@ def run_train_rl(args, data_path: Path, model_path: Path) -> None:
     if model_path.exists():
         cmd += ["--init", str(model_path)]
     print(f"  $ {' '.join(cmd)}", flush=True)
-    subprocess.run(cmd, cwd=str(PROJECT_DIR))
+    subprocess.run(cmd, cwd=str(SCRIPT_DIR))
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="RL training loop for neural_grind (REINFORCE)."
     )
+    _exp08 = str(SCRIPT_DIR / "experiments" / "exp08_num_pool_counts")
     parser.add_argument("--iterations",     type=int,   default=10)
     parser.add_argument("--max-files",      type=int,   default=200)
     parser.add_argument("--batch-size",     type=int,   default=20)
@@ -132,8 +139,12 @@ def main() -> None:
     parser.add_argument("--temperature",    type=float, default=1.0)
     parser.add_argument("--epochs",         type=int,   default=30)
     parser.add_argument("--lr",             type=float, default=1e-4)
-    parser.add_argument("--model",          default="training/model_rl.pt")
-    parser.add_argument("--data-dir",       default="training/data/rl")
+    parser.add_argument("--model",          default=str(SCRIPT_DIR / "data" / "rl" / "model_rl.pt"))
+    parser.add_argument("--serve",          default=str(SCRIPT_DIR / "experiments" / "exp08_num_pool_counts" / "serve.py"),
+                        help="Path to serve.py for model-guided collection")
+    parser.add_argument("--exp",            default=_exp08,
+                        help="Experiment dir for features/model used in train_rl.py")
+    parser.add_argument("--data-dir",       default=str(SCRIPT_DIR / "data" / "rl"))
     parser.add_argument("--reward-success", type=float, default=1.0)
     parser.add_argument("--reward-failure", type=float, default=-1.0)
     parser.add_argument("--no-accumulate",  action="store_true")

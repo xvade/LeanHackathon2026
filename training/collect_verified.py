@@ -165,7 +165,8 @@ def aggregate(log_files: list[Path], out_path: Path) -> dict:
                     record = json.loads(line)
                 except json.JSONDecodeError:
                     continue
-                out.write(line + "\n")
+                record["dataset"] = "mathlib"
+                out.write(json.dumps(record) + "\n")
                 total += 1
                 if record.get("solved"):
                     solved += 1
@@ -205,7 +206,7 @@ def main() -> None:
     script_dir = Path(__file__).parent
     repo_root  = script_dir.parent
 
-    input_path = Path(args.input) if args.input else script_dir / "grind_results_verified.jsonl"
+    input_path = Path(args.input) if args.input else script_dir / "data" / "raw" / "grind_results_verified.jsonl"
     out_path   = Path(args.out)   if args.out   else script_dir / "data" / "verified_splits.jsonl"
 
     if args.project:
@@ -257,9 +258,11 @@ def main() -> None:
         return
 
     # Write batch files and run
-    with tempfile.TemporaryDirectory(prefix="grind_verified_", dir="/tmp") as tmpdir:
-        tmp = Path(tmpdir)
+    # Files go inside the project so lake uses its build cache for imports
+    scratch = project_root / ".collect_scratch"
+    scratch.mkdir(exist_ok=True)
 
+    try:
         # Group into batches
         batches = [snippets[i:i+args.batch_size]
                    for i in range(0, len(snippets), args.batch_size)]
@@ -267,8 +270,8 @@ def main() -> None:
 
         batch_args = []
         for idx, batch in enumerate(batches):
-            lean_file = tmp / f"batch_{idx:04d}.lean"
-            log_file  = tmp / f"batch_{idx:04d}.jsonl"
+            lean_file = scratch / f"batch_{idx:04d}.lean"
+            log_file  = scratch / f"batch_{idx:04d}.jsonl"
             lean_file.write_text(build_batch_file(batch), encoding="utf-8")
             batch_args.append((str(lean_file), str(log_file), str(project_root), args.timeout))
 
@@ -298,6 +301,11 @@ def main() -> None:
         # Aggregate
         print(f"\nAggregating JSONL into {out_path} …")
         stats = aggregate(log_files, out_path)
+
+    finally:
+        # Clean up batch files from project tree
+        import shutil
+        shutil.rmtree(scratch, ignore_errors=True)
 
     print(f"\nDone.")
     print(f"  Total records        : {stats['total']}")

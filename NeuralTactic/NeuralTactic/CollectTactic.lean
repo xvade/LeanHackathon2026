@@ -81,6 +81,10 @@ private initialize modelServerPath : IO.Ref String               ← IO.mkRef ""
 private def getOrStartModelServer : IO (Option ModelServer) := do
   let some modelPath ← IO.getEnv "GRIND_MODEL" | return none
   let some servePath ← IO.getEnv "GRIND_SERVE" | return none
+  let pythonBin ← do
+    match ← IO.getEnv "GRIND_PYTHON" with
+    | some p => pure p
+    | none   => pure "python3"
   -- Reuse existing server when the model path hasn't changed
   let currPath ← modelServerPath.get
   if currPath == modelPath then
@@ -88,7 +92,7 @@ private def getOrStartModelServer : IO (Option ModelServer) := do
   -- Spawn a new server
   try
     let child ← IO.Process.spawn {
-      cmd    := "python3",
+      cmd    := pythonBin,
       args   := #[servePath, "--model", modelPath],
       stdin  := .piped,
       stdout := .piped,

@@ -57,48 +57,61 @@ def normalize_record(record: dict) -> dict | None:
     return None
 
 
-def load_examples(path: str) -> list[dict]:
-    """Return list of decision steps from successful proofs (both schemas)."""
+def load_examples(path: str | list[str]) -> list[dict]:
+    """Return list of decision steps from successful proofs (both schemas).
+    Accepts a single path or a list of paths."""
+    paths = [path] if isinstance(path, str) else path
     examples = []
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                record = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            record = normalize_record(record)
-            if record is None or record.get("outcome") != "success":
-                continue
-            for step in record.get("steps", []):
-                cands = step.get("candidates", [])
-                chosen = step.get("chosenAnchor")
-                if len(cands) < 2 or chosen is None:
+    for p in paths:
+        with open(p) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
                     continue
-                # anchor may be int or string — compare as strings for safety
-                chosen_s = str(chosen)
-                target_idx = next(
-                    (i for i, c in enumerate(cands) if str(c["anchor"]) == chosen_s),
-                    None,
-                )
-                if target_idx is None:
+                try:
+                    record = json.loads(line)
+                except json.JSONDecodeError:
                     continue
-                examples.append({
-                    "goalFeatures": step["goalFeatures"],
-                    "candidates":   cands,
-                    "target":       target_idx,
-                    "statePP":      step.get("statePP", []),
-                    "grindState":   step.get("grindState", []),
-                })
+                record = normalize_record(record)
+                if record is None or record.get("outcome") != "success":
+                    continue
+                for step in record.get("steps", []):
+                    cands = step.get("candidates", [])
+                    chosen = step.get("chosenAnchor")
+                    if len(cands) < 2 or chosen is None:
+                        continue
+                    chosen_s = str(chosen)
+                    target_idx = next(
+                        (i for i, c in enumerate(cands) if str(c["anchor"]) == chosen_s),
+                        None,
+                    )
+                    if target_idx is None:
+                        continue
+                    examples.append({
+                        "goalFeatures": step["goalFeatures"],
+                        "candidates":   cands,
+                        "target":       target_idx,
+                        "statePP":      step.get("statePP", []),
+                        "grindState":   step.get("grindState", []),
+                    })
     return examples
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data",   required=True, action="append",
+                        help="Path to JSONL data file (repeatable for multiple files)")
+    parser.add_argument("--out",    required=True, help="Output model checkpoint path")
+    parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--lr",     type=float, default=1e-3)
+    return parser.parse_args()
 
 
 def train(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Loading data from {args.data} …", flush=True)
-    examples = load_examples(args.data)
+    paths = args.data  # list from action="append"
+    print(f"Loading data from {paths} …", flush=True)
+    examples = load_examples(paths)
     if not examples:
         print("No training examples found (need successful proofs with ≥2 candidates).")
         return
@@ -143,9 +156,4 @@ def train(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--data",   required=True, help="Path to JSONL log file")
-    parser.add_argument("--out",    required=True, help="Output model checkpoint path")
-    parser.add_argument("--epochs", type=int, default=20)
-    parser.add_argument("--lr",     type=float, default=1e-3)
-    train(parser.parse_args())
+    train(parse_args())

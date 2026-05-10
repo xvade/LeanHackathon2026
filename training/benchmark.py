@@ -1,24 +1,29 @@
 """
-benchmark.py — compare grind's heuristic vs. our neural model.
+benchmark.py - compare real `grind` vs real `neural_grind`.
 
-For each sampled theorem:
-  • Runs grind_collect (GrindExtraction, pure heuristic) → captures split-decision count
-  • Runs neural_collect (NeuralTactic, model-guided)   → captures split-decision count
+This benchmarks the production tactics, not the collection tactics. Each
+sampled problem is run twice in isolated Lean invocations:
 
-Primary metric: number of split decisions to close the proof.
-Fewer steps = model found a better split ordering.
+  1. original problem with `grind`
+  2. same problem with `neural_grind`
+
+The primary metric is wall-clock elapsed time for successful Lean compilation.
+Split traces are optional diagnostics; use `--no-trace-splits` for cleaner
+timing runs.
+
+Input sources:
+  mathlib  - training/data/raw/grind_results_verified.jsonl
+  workbook - training/data/raw/workbook_grind_solved_verified.jsonl
+  numina   - training/data/raw/numina_finelean_grind_verified.jsonl
+  numina-v2 - training/data/raw/numina_finelean_grind_v2.jsonl
 
 Usage:
-    python3 training/benchmark.py [options]
-
-Options:
-  --model PATH      Model checkpoint (default: training/model.pt)
-  --n N             Theorems to sample per module (default: 3)
-  --workers N       Parallel Lean processes (default: 4)
-  --timeout N       Seconds per theorem (default: 60)
-  --seed N          Random seed for sampling (default: 42)
-  --only-plain      Skip theorems that need grind hints (default: True)
+    python3 training/benchmark.py --sources mathlib,workbook,numina [options]
+    python3 training/benchmark.py --benchmark-file training/data/split_active_benchmark.jsonl
+    python3 training/benchmark.py --benchmark-file training/data/split_active_benchmark.jsonl --neural-no-model
 """
+
+from __future__ import annotations
 
 import argparse
 import json
@@ -27,316 +32,673 @@ import random
 import re
 import subprocess
 import sys
-import tempfile
 import time
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
-REPO     = Path(__file__).parent.parent
+REPO = Path(__file__).parent.parent
 TRAINING = Path(__file__).parent
-GRIND_PROJECT   = REPO / "GrindExtraction"
-NEURAL_PROJECT  = REPO / "NeuralTactic"
+RAW = TRAINING / "data" / "raw"
+NEURAL_PROJECT = REPO / "NeuralTactic"
+
+SOURCE_PATHS = {
+    "mathlib": RAW / "grind_results_verified.jsonl",
+    "workbook": RAW / "workbook_grind_solved_verified.jsonl",
+    "numina": RAW / "numina_finelean_grind_verified.jsonl",
+    "numina-v2": RAW / "numina_finelean_grind_v2.jsonl",
+}
+
+SPLIT_TRACE_RE = re.compile(r"\[grind\.split\]")
 
 
 # ---------------------------------------------------------------------------
-# Theorem sampling
+# Problem loading and sampling
 # ---------------------------------------------------------------------------
 
-def module_name(file_path: str) -> str:
+def mathlib_module(file_path: str) -> str:
     return file_path.replace("Mathlib/", "").split("/")[0]
 
+
 def difficulty(elapsed_s: float) -> str:
-    if elapsed_s < 0.1: return "easy"
-    if elapsed_s < 0.5: return "medium"
+    if elapsed_s < 0.1:
+        return "easy"
+    if elapsed_s < 0.5:
+        return "medium"
     return "hard"
 
-def sample_theorems(verified_path: Path, n_per_module: int,
-                    only_plain: bool, seed: int) -> list[dict]:
-    rng = random.Random(seed)
+
+def _read_jsonl(path: Path) -> list[dict]:
     records = []
-    for line in verified_path.read_text().splitlines():
+    if not path.exists():
+        return records
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
         line = line.strip()
-        if not line: continue
+        if not line:
+            continue
         try:
-            r = json.loads(line)
+            records.append(json.loads(line))
         except json.JSONDecodeError:
             continue
-        if only_plain and r.get("grind_call") != "grind":
+    return records
+
+
+def _strip_import_mathlib(text: str) -> str:
+    return re.sub(r"^\s*import Mathlib\s*\n+", "", text.strip())
+
+
+def _statement_to_snippet(statement: str) -> str:
+    return "import Mathlib\n\n" + _strip_import_mathlib(statement) + "\n"
+
+
+def _topic_group(record: dict, default: str) -> str:
+    tags = record.get("tags") or []
+    if tags and isinstance(tags, list) and str(tags[0]).strip():
+        return str(tags[0]).strip()
+    name = str(record.get("id") or record.get("name") or "")
+    if "_" in name:
+        return name.split("_", 1)[0]
+    return default
+
+
+def _numeric_id_bucket(record: dict, prefix: str, width: int = 10000) -> str:
+    name = str(record.get("id") or record.get("name") or "")
+    match = re.search(r"(\d+)$", name)
+    if not match:
+        return prefix
+    start = int(match.group(1)) // width * width
+    end = start + width - 1
+    return f"{prefix}_{start:05d}_{end:05d}"
+
+
+def normalize_mathlib(record: dict) -> dict:
+    return {
+        "source": "mathlib",
+        "group": mathlib_module(record.get("file_path", "Mathlib/unknown")),
+        "name": record.get("name") or "unknown",
+        "file_path": record.get("file_path") or "Mathlib/unknown",
+        "lean_snippet": record["lean_snippet"],
+        "grind_call": record.get("grind_call", "grind"),
+        "elapsed_s": float(record.get("elapsed_s", 0.0) or 0.0),
+    }
+
+
+def normalize_statement_record(record: dict, source: str) -> dict:
+    statement = record.get("solved_formal_statement") or record.get("lean_snippet")
+    if not statement:
+        statement = record.get("original_formal_statement", "")
+    if source == "workbook":
+        group = _numeric_id_bucket(record, "workbook")
+    else:
+        group = _topic_group(record, record.get("split", source))
+    name = record.get("id") or record.get("name") or "unknown"
+    return {
+        "source": source,
+        "group": group,
+        "name": name,
+        "file_path": f"{source}/{group}",
+        "lean_snippet": _statement_to_snippet(statement),
+        "grind_call": record.get("grind_call", "grind"),
+        "elapsed_s": float(record.get("elapsed_s", 0.0) or 0.0),
+    }
+
+
+def load_source(source: str, only_plain: bool) -> list[dict]:
+    path = SOURCE_PATHS[source]
+    normalized = []
+    for record in _read_jsonl(path):
+        if only_plain and record.get("grind_call", "grind") != "grind":
             continue
-        records.append(r)
+        try:
+            if source == "mathlib":
+                normalized.append(normalize_mathlib(record))
+            else:
+                normalized.append(normalize_statement_record(record, source))
+        except Exception:
+            continue
+    return normalized
 
-    by_module = defaultdict(list)
-    for r in records:
-        by_module[module_name(r["file_path"])].append(r)
 
+def _spread_sample(records: list[dict], n: int) -> list[dict]:
+    if n <= 0 or len(records) <= n:
+        return records[:]
+    ordered = sorted(records, key=lambda r: r.get("elapsed_s", 0.0))
+    step = len(ordered) / n
+    return [ordered[int(i * step)] for i in range(n)]
+
+
+def sample_problems(
+    sources: list[str],
+    n_per_group: int,
+    max_per_source: int | None,
+    only_plain: bool,
+    seed: int,
+) -> list[dict]:
+    rng = random.Random(seed)
     sampled = []
-    for mod, recs in sorted(by_module.items()):
-        # Sort by elapsed_s to get spread of difficulty; sample evenly
-        recs_sorted = sorted(recs, key=lambda r: r.get("elapsed_s", 0))
-        # Take n_per_module evenly spaced across the sorted list
-        if len(recs_sorted) <= n_per_module:
-            chosen = recs_sorted
-        else:
-            step = len(recs_sorted) / n_per_module
-            chosen = [recs_sorted[int(i * step)] for i in range(n_per_module)]
-        sampled.extend(chosen)
+
+    for source in sources:
+        records = load_source(source, only_plain)
+        by_group: dict[str, list[dict]] = defaultdict(list)
+        for record in records:
+            by_group[record["group"]].append(record)
+
+        source_sample = []
+        for group in sorted(by_group):
+            source_sample.extend(_spread_sample(by_group[group], n_per_group))
+
+        if max_per_source is not None:
+            source_sample = _spread_sample(source_sample, max_per_source)
+
+        sampled.extend(source_sample)
 
     rng.shuffle(sampled)
     return sampled
 
 
+def load_benchmark_file(path: Path, only_plain: bool) -> list[dict]:
+    records = []
+    for record in _read_jsonl(path):
+        if only_plain and record.get("grind_call", "grind") != "grind":
+            continue
+        required = {"source", "group", "name", "lean_snippet", "grind_call"}
+        if required.issubset(record):
+            records.append(record)
+    return records
+
+
 # ---------------------------------------------------------------------------
-# Snippet transformation
+# Lean file construction
 # ---------------------------------------------------------------------------
 
-def make_grind_collect_file(snippet: str, grind_call: str) -> str:
-    """Replace grind with grind_collect and add GrindExtraction import."""
-    s = re.sub(r"^import Mathlib\s*\n", "", snippet)
+def transform_snippet(lean_snippet: str, grind_call: str, tactic: str) -> str:
+    snippet = re.sub(r"^\s*import Mathlib\s*\n+", "", lean_snippet.strip())
     escaped = re.escape(grind_call)
-    s = re.sub(r":=\s*by\s*\n\s*" + escaped + r"\b", ":= by grind_collect", s)
-    s = re.sub(r":=\s*by\s+" + escaped + r"\b", ":= by grind_collect", s)
-    return "import Mathlib\nimport GrindExtraction\nset_option maxHeartbeats 400000\n\n" + s.strip()
+    snippet = re.sub(
+        r":=\s*by\s*\n\s*" + escaped + r"\b",
+        f":= by {tactic}",
+        snippet,
+    )
+    snippet = re.sub(
+        r":=\s*by\s+" + escaped + r"\b",
+        f":= by {tactic}",
+        snippet,
+    )
+    return snippet.strip()
 
-def make_neural_collect_file(snippet: str, grind_call: str) -> str:
-    """Replace grind with neural_collect and add NeuralTactic import."""
-    s = re.sub(r"^import Mathlib\s*\n", "", snippet)
-    escaped = re.escape(grind_call)
-    s = re.sub(r":=\s*by\s*\n\s*" + escaped + r"\b", ":= by neural_collect", s)
-    s = re.sub(r":=\s*by\s+" + escaped + r"\b", ":= by neural_collect", s)
-    return "import Mathlib\nimport NeuralTactic\nset_option maxHeartbeats 400000\n\n" + s.strip()
+
+def build_lean_file(
+    record: dict,
+    tactic: str,
+    import_neural: bool,
+    trace_splits: bool,
+) -> str:
+    lines = ["import Mathlib"]
+    if import_neural:
+        lines.append("import NeuralTactic")
+    lines.append("set_option maxHeartbeats 400000")
+    if trace_splits:
+        lines.append("set_option trace.grind.split true")
+    lines.append("")
+    lines.append(transform_snippet(record["lean_snippet"], record["grind_call"], tactic))
+    lines.append("")
+    return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
-# Running one theorem (called in worker process)
+# Tactic runner
 # ---------------------------------------------------------------------------
 
-def run_grind_collect(lean_src: str, project: str, timeout: int) -> dict:
-    with tempfile.NamedTemporaryFile(suffix=".lean", mode="w", delete=False,
-                                    dir="/tmp") as f:
-        f.write(lean_src)
-        fname = f.name
+def _first_error(stream: str) -> str | None:
+    for line in stream.splitlines():
+        if "lakefile.lean and lakefile.toml" in line:
+            continue
+        if ": error:" in line or line.startswith("error:"):
+            return line.strip()[:500]
+    for line in stream.splitlines():
+        line = line.strip()
+        if "lakefile.lean and lakefile.toml" in line:
+            continue
+        if line and not line.startswith("[grind.split]") and not line.startswith("info:"):
+            return line[:500]
+    return None
+
+
+def _coerce_text(value: str | bytes | None) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value
+
+
+def _result(
+    solved: bool,
+    elapsed: float,
+    stdout: str | bytes | None = "",
+    stderr: str | bytes | None = "",
+    error: str | None = None,
+) -> dict:
+    stdout = _coerce_text(stdout)
+    stderr = _coerce_text(stderr)
+    combined = stdout + "\n" + stderr
+    splits = len(SPLIT_TRACE_RE.findall(combined))
+    return {
+        "solved": solved,
+        "elapsed": elapsed,
+        "splits": splits if splits > 0 else None,
+        "error": None if solved else error or _first_error(stderr) or _first_error(stdout),
+    }
+
+
+def run_tactic(
+    record: dict,
+    tactic: str,
+    import_neural: bool,
+    env: dict[str, str],
+    timeout: int,
+    trace_splits: bool,
+    keep_files: bool,
+) -> dict:
+    scratch = NEURAL_PROJECT / ".collect_scratch"
+    scratch.mkdir(exist_ok=True)
+    safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", record.get("name", "problem"))
+    fname = scratch / f"bench_{tactic}_{os.getpid()}_{time.time_ns()}_{safe_name}.lean"
+    fname.write_text(
+        build_lean_file(record, tactic, import_neural, trace_splits),
+        encoding="utf-8",
+    )
+
     try:
         t0 = time.monotonic()
         proc = subprocess.run(
-            ["lake", "env", "lean", fname],
-            cwd=project, capture_output=True, text=True, timeout=timeout,
-            env=os.environ.copy(),
+            ["lake", "env", "lean", str(fname)],
+            cwd=str(NEURAL_PROJECT),
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            env=env,
         )
         elapsed = time.monotonic() - t0
-        # Parse JSON lines from stdout
-        json_lines = [l for l in proc.stdout.splitlines() if l.strip().startswith("{")]
-        decisions = 0
-        solved = False
-        for line in json_lines:
+        return _result(
+            solved=proc.returncode == 0,
+            elapsed=elapsed,
+            stdout=proc.stdout,
+            stderr=proc.stderr,
+        )
+    except subprocess.TimeoutExpired as e:
+        return _result(
+            solved=False,
+            elapsed=float(timeout),
+            stdout=e.stdout or "",
+            stderr=e.stderr or "",
+            error=f"timeout after {timeout}s",
+        )
+    except Exception as e:
+        return _result(False, 0.0, error=str(e))
+    finally:
+        if not keep_files:
             try:
-                r = json.loads(line)
-                solved = bool(r.get("solved", False))
-                decisions = len(r.get("splitDecisions", []))
-            except Exception:
+                fname.unlink()
+            except OSError:
                 pass
-        return {"solved": solved, "steps": decisions, "elapsed": elapsed, "error": None}
-    except subprocess.TimeoutExpired:
-        return {"solved": False, "steps": -1, "elapsed": timeout, "error": "timeout"}
-    except Exception as e:
-        return {"solved": False, "steps": -1, "elapsed": 0.0, "error": str(e)}
-    finally:
-        try: os.unlink(fname)
-        except: pass
 
 
-def run_neural_collect(lean_src: str, project: str, model_path: str,
-                       serve_path: str, timeout: int) -> dict:
-    with tempfile.NamedTemporaryFile(suffix=".lean", mode="w", delete=False,
-                                    dir="/tmp") as f:
-        f.write(lean_src)
-        fname = f.name
-    with tempfile.NamedTemporaryFile(suffix=".jsonl", mode="w", delete=False,
-                                     dir="/tmp") as lf:
-        log_path = lf.name
-
+def neural_env(
+    model_path: str,
+    serve_path: str,
+    no_model: bool,
+    margin_milli: int,
+    include_expr_text: bool,
+) -> dict[str, str]:
     env = os.environ.copy()
-    env["GRIND_LOG"]   = log_path
-    env["GRIND_MODEL"] = model_path
-    env["GRIND_SERVE"] = serve_path
-    # Ensure the correct python is found for serve.py
     python_bin = str(Path(sys.executable).parent)
+    if no_model:
+        env["GRIND_NO_MODEL"] = "1"
+        env.pop("GRIND_MODEL", None)
+        env.pop("GRIND_SERVE", None)
+        env.pop("GRIND_PYTHON", None)
+    else:
+        env.pop("GRIND_NO_MODEL", None)
+        env["GRIND_MODEL"] = model_path
+        env["GRIND_SERVE"] = serve_path
+        env["GRIND_PYTHON"] = sys.executable
     env["PATH"] = python_bin + ":" + env.get("PATH", "")
+    env["GRIND_MARGIN_MILLI"] = str(max(0, margin_milli))
+    if include_expr_text:
+        env["GRIND_INCLUDE_EXPR_TEXT"] = "1"
+    else:
+        env.pop("GRIND_INCLUDE_EXPR_TEXT", None)
+    return env
 
-    try:
-        t0 = time.monotonic()
-        proc = subprocess.run(
-            ["lake", "env", "lean", fname],
-            cwd=project, capture_output=True, text=True, timeout=timeout, env=env,
+
+def run_one(args_tuple: tuple[dict, str, str, int, bool, bool, bool, bool, int, bool]) -> dict:
+    (
+        record,
+        model_path,
+        serve_path,
+        timeout,
+        trace_splits,
+        keep_files,
+        grind_only,
+        no_model,
+        margin_milli,
+        include_expr_text,
+    ) = args_tuple
+    grind = run_tactic(
+        record=record,
+        tactic="grind",
+        import_neural=False,
+        env=os.environ.copy(),
+        timeout=timeout,
+        trace_splits=trace_splits,
+        keep_files=keep_files,
+    )
+    if grind_only:
+        neural = {
+            "solved": False,
+            "elapsed": 0.0,
+            "splits": None,
+            "error": "skipped",
+        }
+    else:
+        neural = run_tactic(
+            record=record,
+            tactic="neural_grind",
+            import_neural=True,
+            env=neural_env(
+                model_path=model_path,
+                serve_path=serve_path,
+                no_model=no_model,
+                margin_milli=margin_milli,
+                include_expr_text=include_expr_text,
+            ),
+            timeout=timeout,
+            trace_splits=trace_splits,
+            keep_files=keep_files,
         )
-        elapsed = time.monotonic() - t0
-        # Success is determined by exit code; log gives step count
-        solved = proc.returncode == 0
-        decisions = 0
-        try:
-            for line in Path(log_path).read_text().splitlines():
-                line = line.strip()
-                if not line: continue
-                r = json.loads(line)
-                decisions = len(r.get("steps", []))
-        except Exception:
-            pass
-        return {"solved": solved, "steps": decisions, "elapsed": elapsed, "error": None}
-    except subprocess.TimeoutExpired:
-        return {"solved": False, "steps": -1, "elapsed": timeout, "error": "timeout"}
-    except Exception as e:
-        return {"solved": False, "steps": -1, "elapsed": 0.0, "error": str(e)}
-    finally:
-        try: os.unlink(fname)
-        except: pass
-        try: os.unlink(log_path)
-        except: pass
-
-
-def run_one(args_tuple):
-    """Worker: run one theorem through both tactics."""
-    rec, model_path, serve_path, grind_proj, neural_proj, timeout = args_tuple
-
-    snippet    = rec["lean_snippet"]
-    grind_call = rec["grind_call"]
-
-    gc_src  = make_grind_collect_file(snippet, grind_call)
-    nc_src  = make_neural_collect_file(snippet, grind_call)
-
-    gc  = run_grind_collect(gc_src,  str(grind_proj),  timeout)
-    nc  = run_neural_collect(nc_src, str(neural_proj), model_path, serve_path, timeout)
-
-    return {"record": rec, "grind": gc, "neural": nc}
+    return {"record": record, "grind": grind, "neural": neural}
 
 
 # ---------------------------------------------------------------------------
 # Report
 # ---------------------------------------------------------------------------
 
-def winner(grind_steps: int, neural_steps: int,
-           grind_solved: bool, neural_solved: bool) -> str:
-    if not grind_solved and not neural_solved: return "both-fail"
-    if grind_solved and not neural_solved:     return "grind"
-    if neural_solved and not grind_solved:     return "neural"
-    # Both solved
-    if neural_steps < grind_steps:  return "neural"
-    if grind_steps  < neural_steps: return "grind"
+def result_label(result: dict) -> str:
+    status = "ok" if result["solved"] else "fail"
+    elapsed = f"{result['elapsed']:.2f}s" if result["elapsed"] > 0 else "0.00s"
+    if result.get("splits") is not None:
+        return f"{result['splits']}/{elapsed} {status}"
+    return f"-/{elapsed} {status}"
+
+
+def winner(grind: dict, neural: dict, tie_pct: float) -> str:
+    if not grind["solved"] and not neural["solved"]:
+        return "both-fail"
+    if grind["solved"] and not neural["solved"]:
+        return "grind"
+    if neural["solved"] and not grind["solved"]:
+        return "neural"
+
+    if grind["elapsed"] <= 0 or neural["elapsed"] <= 0:
+        return "tie"
+    speed_delta = (grind["elapsed"] - neural["elapsed"]) / grind["elapsed"] * 100.0
+    if speed_delta > tie_pct:
+        return "neural"
+    if speed_delta < -tie_pct:
+        return "grind"
     return "tie"
 
 
-def print_report(results: list[dict]) -> None:
+def split_delta_label(grind: dict, neural: dict) -> str:
+    if not (grind["solved"] and neural["solved"]):
+        return ""
+    if grind.get("splits") is not None and neural.get("splits") is not None:
+        delta = neural["splits"] - grind["splits"]
+        return f"{delta:+d}"
+    return ""
+
+
+def speed_delta_label(grind: dict, neural: dict) -> str:
+    if not (grind["solved"] and neural["solved"]) or grind["elapsed"] <= 0:
+        return ""
+    delta = (grind["elapsed"] - neural["elapsed"]) / grind["elapsed"] * 100.0
+    return f"{delta:+.1f}%"
+
+
+def _empty_counts() -> dict[str, int]:
+    return {"neural": 0, "grind": 0, "tie": 0, "both-fail": 0}
+
+
+def print_report(results: list[dict], max_failures: int, time_tie_pct: float) -> None:
     print()
-    print(f"{'Theorem':<28} {'Module':<18} {'Diff':<7} "
-          f"{'heuristic':>10} {'neural':>7} {'Δ':>4}  {'Winner'}")
-    print("─" * 85)
+    print(
+        f"{'Source':<10} {'Group':<16} {'Problem':<30} "
+        f"{'grind':>16} {'neural':>16} {'splitΔ':>7} {'speedΔ':>8}  Faster"
+    )
+    print("-" * 124)
 
-    wins = {"neural": 0, "grind": 0, "tie": 0, "both-fail": 0}
+    wins = _empty_counts()
+    by_source: dict[str, dict[str, int]] = defaultdict(_empty_counts)
+    neural_failures = []
 
-    for res in results:
-        rec   = res["record"]
-        gc    = res["grind"]
-        nc    = res["neural"]
-        name  = rec["name"][:27]
-        mod   = module_name(rec["file_path"])[:17]
-        diff  = difficulty(rec.get("elapsed_s", 0))
+    for result in results:
+        record = result["record"]
+        grind = result["grind"]
+        neural = result["neural"]
+        win = winner(grind, neural, time_tie_pct)
+        wins[win] += 1
+        by_source[record["source"]][win] += 1
+        if grind["solved"] and not neural["solved"]:
+            neural_failures.append(result)
 
-        g_steps = gc["steps"] if gc["solved"] else "✗"
-        n_steps = nc["steps"] if nc["solved"] else "✗"
-        delta   = ""
-        if gc["solved"] and nc["solved"]:
-            d = nc["steps"] - gc["steps"]
-            delta = f"{d:+d}" if d != 0 else "0"
-
-        w = winner(gc["steps"], nc["steps"], gc["solved"], nc["solved"])
-        wins[w] += 1
-        marker = {"neural": "◀ neural", "grind": "grind ▶", "tie": "tie",
-                  "both-fail": "FAIL"}.get(w, w)
-
-        print(f"{name:<28} {mod:<18} {diff:<7} "
-              f"{str(g_steps):>10} {str(n_steps):>7} {delta:>4}  {marker}")
+        print(
+            f"{record['source'][:9]:<10} "
+            f"{record['group'][:15]:<16} "
+            f"{record['name'][:29]:<30} "
+            f"{result_label(grind):>16} "
+            f"{result_label(neural):>16} "
+            f"{split_delta_label(grind, neural):>7} "
+            f"{speed_delta_label(grind, neural):>8}  {win}"
+        )
 
     n = len(results)
-    print("─" * 85)
-    print(f"\nSummary ({n} theorems):")
-    print(f"  Neural wins  (fewer splits): {wins['neural']:3d} / {n}  "
-          f"({wins['neural']/n*100:.1f}%)")
-    print(f"  Tie          (same splits) : {wins['tie']:3d} / {n}  "
-          f"({wins['tie']/n*100:.1f}%)")
-    print(f"  Grind wins   (fewer splits): {wins['grind']:3d} / {n}  "
-          f"({wins['grind']/n*100:.1f}%)")
-    print(f"  Both failed               : {wins['both-fail']:3d} / {n}")
+    print("-" * 124)
+    print(f"\nSummary ({n} problems):")
+    print(f"  Neural faster : {wins['neural']:3d} / {n} ({wins['neural']/n*100:.1f}%)")
+    print(f"  Timing ties   : {wins['tie']:3d} / {n} ({wins['tie']/n*100:.1f}%)")
+    print(f"  Grind faster  : {wins['grind']:3d} / {n} ({wins['grind']/n*100:.1f}%)")
+    print(f"  Both failed   : {wins['both-fail']:3d} / {n}")
+    print(f"  Tie tolerance : ±{time_tie_pct:.1f}% elapsed time")
 
-    # Step-count improvement on theorems both solved with >0 splits
-    contested = [(res["grind"]["steps"], res["neural"]["steps"])
-                 for res in results
-                 if res["grind"]["solved"] and res["neural"]["solved"]
-                 and max(res["grind"]["steps"], res["neural"]["steps"]) > 0]
+    print("\nBy source:")
+    for source in sorted(by_source):
+        counts = by_source[source]
+        total = sum(counts.values())
+        print(
+            f"  {source:<9} n={total:3d} "
+            f"neural_faster={counts['neural']:3d} ties={counts['tie']:3d} "
+            f"grind_faster={counts['grind']:3d} both-fail={counts['both-fail']:3d}"
+        )
+
+    timed = [
+        (r["grind"]["elapsed"], r["neural"]["elapsed"])
+        for r in results
+        if r["grind"]["solved"] and r["neural"]["solved"]
+    ]
+    if timed:
+        total_grind_time = sum(g for g, _ in timed)
+        total_neural_time = sum(n for _, n in timed)
+        reduction = (total_grind_time - total_neural_time) / max(total_grind_time, 1e-9) * 100.0
+        ratio = total_grind_time / max(total_neural_time, 1e-9)
+        print(
+            "\nTotal elapsed on comparable solved problems: "
+            f"grind={total_grind_time:.2f}s neural={total_neural_time:.2f}s "
+            f"speed_delta={reduction:+.1f}% speed_ratio={ratio:.3f}x"
+        )
+
+    contested = [
+        (r["grind"]["splits"], r["neural"]["splits"])
+        for r in results
+        if r["grind"]["solved"]
+        and r["neural"]["solved"]
+        and r["grind"].get("splits") is not None
+        and r["neural"].get("splits") is not None
+    ]
     if contested:
-        total_g = sum(g for g, _ in contested)
-        total_n = sum(n for _, n in contested)
-        pct = (total_g - total_n) / max(total_g, 1) * 100
-        print(f"\n  Total splits on contested theorems: "
-              f"heuristic={total_g}  neural={total_n}  "
-              f"reduction={pct:+.1f}%")
+        total_grind = sum(g for g, _ in contested)
+        total_neural = sum(n for _, n in contested)
+        pct = (total_grind - total_neural) / max(total_grind, 1) * 100
+        print(
+            "\nTotal traced splits on comparable solved problems: "
+            f"grind={total_grind} neural={total_neural} reduction={pct:+.1f}%"
+        )
+
+    if neural_failures and max_failures > 0:
+        print(f"\nNeural failures where grind solved (first {max_failures}):")
+        for result in neural_failures[:max_failures]:
+            record = result["record"]
+            error = result["neural"].get("error") or "unknown error"
+            print(
+                f"  {record['source']}/{record['group']}/{record['name']}: "
+                f"{error}"
+            )
 
 
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
-def parse_args():
-    p = argparse.ArgumentParser()
-    p.add_argument("--model",      default=str(TRAINING / "model.pt"))
-    p.add_argument("--serve",      default=str(TRAINING / "serve.py"),
-                   help="Path to serve.py (override for experiments)")
-    p.add_argument("--n",          type=int, default=3,
-                   help="Theorems to sample per Mathlib module")
-    p.add_argument("--workers",    type=int, default=4)
-    p.add_argument("--timeout",    type=int, default=60)
-    p.add_argument("--seed",       type=int, default=42)
-    p.add_argument("--only-plain", action="store_true", default=True)
-    return p.parse_args()
+def parse_sources(raw: str) -> list[str]:
+    sources = [s.strip() for s in raw.split(",") if s.strip()]
+    unknown = [s for s in sources if s not in SOURCE_PATHS]
+    if unknown:
+        raise SystemExit(f"Unknown source(s): {', '.join(unknown)}")
+    return sources
 
 
-def main():
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", default=str(TRAINING / "model.pt"))
+    parser.add_argument("--serve", default=str(TRAINING / "serve.py"))
+    parser.add_argument("--sources", default="mathlib,workbook,numina")
+    parser.add_argument("--benchmark-file", default=None,
+                        help="JSONL file of normalized benchmark records")
+    parser.add_argument("--n", type=int, default=1,
+                        help="Problems sampled per source group")
+    parser.add_argument("--max-per-source", type=int, default=12,
+                        help="Cap sampled problems per source; use 0 for no cap")
+    parser.add_argument("--workers", type=int, default=2)
+    parser.add_argument("--timeout", type=int, default=120)
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--only-plain", action="store_true", default=True)
+    parser.add_argument("--grind-only", action="store_true")
+    parser.add_argument("--neural-no-model", action="store_true",
+                        help="Run neural_grind with model inference disabled")
+    parser.add_argument("--margin-milli", type=int, default=0,
+                        help="Require model top-1/top-2 margin in milli-logits")
+    parser.add_argument("--include-expr-text", action="store_true",
+                        help="Send pretty-printed candidate expressions to the model")
+    parser.add_argument("--no-trace-splits", action="store_true")
+    parser.add_argument("--time-tie-pct", type=float, default=5.0,
+                        help="Treat elapsed-time differences within this percent as ties")
+    parser.add_argument("--keep-files", action="store_true")
+    parser.add_argument("--max-failures", type=int, default=10)
+    return parser.parse_args()
+
+
+def main() -> None:
     args = parse_args()
     model_path = str(Path(args.model).resolve())
     serve_path = str(Path(args.serve).resolve())
-    verified   = TRAINING / "grind_results_verified.jsonl"
+    sources = parse_sources(args.sources)
+    max_per_source = None if args.max_per_source == 0 else args.max_per_source
 
-    if not Path(model_path).exists():
-        print(f"Model not found: {model_path}", file=sys.stderr); sys.exit(1)
+    uses_model = not args.grind_only and not args.neural_no_model
 
-    theorems = sample_theorems(verified, args.n, args.only_plain, args.seed)
-    print(f"Benchmark: grind heuristic vs. neural model")
-    print(f"Model    : {model_path}")
-    print(f"Theorems : {len(theorems)} across "
-          f"{len({module_name(r['file_path']) for r in theorems})} modules")
-    print(f"Workers  : {args.workers}  timeout={args.timeout}s")
+    if uses_model and not Path(model_path).exists():
+        print(f"Model not found: {model_path}", file=sys.stderr)
+        sys.exit(1)
+    if uses_model and not Path(serve_path).exists():
+        print(f"Serve script not found: {serve_path}", file=sys.stderr)
+        sys.exit(1)
 
-    work = [(r, model_path, serve_path, GRIND_PROJECT, NEURAL_PROJECT, args.timeout)
-            for r in theorems]
+    if args.benchmark_file:
+        problems = load_benchmark_file(Path(args.benchmark_file), args.only_plain)
+    else:
+        problems = sample_problems(
+            sources=sources,
+            n_per_group=args.n,
+            max_per_source=max_per_source,
+            only_plain=args.only_plain,
+            seed=args.seed,
+        )
+    work = [
+        (
+            record,
+            model_path,
+            serve_path,
+            args.timeout,
+            not args.no_trace_splits,
+            args.keep_files,
+            args.grind_only,
+            args.neural_no_model,
+            args.margin_milli,
+            args.include_expr_text,
+        )
+        for record in problems
+    ]
+
+    print("Benchmark: real grind vs real neural_grind")
+    if args.benchmark_file:
+        print(f"Input    : {args.benchmark_file}")
+    else:
+        print(f"Sources  : {', '.join(sources)}")
+    print(f"Problems : {len(problems)}")
+    if not args.benchmark_file:
+        print(f"Sampling : n={args.n} per group, max_per_source={max_per_source or 'none'}")
+    print(f"Workers  : {args.workers}")
+    print(f"Timeout  : {args.timeout}s per tactic run")
+    print(f"Trace    : {'off' if args.no_trace_splits else 'trace.grind.split'}")
+    print(f"Metric   : elapsed time, ties within ±{max(0.0, args.time_tie_pct):.1f}%")
+    if args.neural_no_model:
+        print("Neural   : no-model fallback mode")
+    elif not args.grind_only:
+        print(f"Model    : {model_path}")
+        print(f"Serve    : {serve_path}")
+        print(f"Margin   : {max(0, args.margin_milli)} milli-logits")
+        print(f"Expr text: {'on' if args.include_expr_text else 'off'}")
+    print()
 
     results = []
-    done = 0
+    started = time.monotonic()
     with ProcessPoolExecutor(max_workers=args.workers) as pool:
-        futs = {pool.submit(run_one, w): w for w in work}
-        for fut in as_completed(futs):
-            res = fut.result()
-            done += 1
-            name = res["record"]["name"]
-            g = res["grind"]
-            n = res["neural"]
-            g_s = f"{g['steps']}✓" if g["solved"] else "✗"
-            n_s = f"{n['steps']}✓" if n["solved"] else "✗"
-            print(f"  [{done:3d}/{len(work)}] {name:<35} "
-                  f"grind={g_s:<5} neural={n_s}", flush=True)
-            results.append(res)
+        futures = {pool.submit(run_one, item): item[0] for item in work}
+        for idx, fut in enumerate(as_completed(futures), 1):
+            result = fut.result()
+            results.append(result)
+            record = result["record"]
+            print(
+                f"  [{idx:3d}/{len(work)}] "
+                f"{record['source']}/{record['group']}/{record['name']:<35} "
+                f"grind={result_label(result['grind']):<16} "
+                f"neural={result_label(result['neural']):<16}",
+                flush=True,
+            )
+            if result["neural"].get("error") and not result["neural"]["solved"]:
+                print(f"      neural error: {result['neural']['error']}", flush=True)
 
-    # Sort by module then name for clean output
-    results.sort(key=lambda r: (module_name(r["record"]["file_path"]),
-                                r["record"]["name"]))
-    print_report(results)
+    results.sort(key=lambda r: (
+        r["record"]["source"],
+        r["record"]["group"],
+        r["record"]["name"],
+    ))
+    print_report(
+        results,
+        max_failures=args.max_failures,
+        time_tie_pct=max(0.0, args.time_tie_pct),
+    )
+    print(f"\nElapsed wall time: {time.monotonic() - started:.1f}s")
 
 
 if __name__ == "__main__":

@@ -1,14 +1,15 @@
 """EXP-08: Numeric + pool aggregates + grindState counts. No text at all."""
+import importlib.util
 import torch
-import sys
 from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
 
-from features import (
-    SOURCE_TAGS, NUM_SOURCES, TRIGRAM_VOCAB, TEXT_EMB_DIM, CONTEXT_DIM,
-    GRIND_STATE_MAX_EVENTS, source_onehot, trigram_ids, candidate_numeric,
-    batch_trigrams, context_trigrams,
-)
+# Load base features by explicit path to avoid circular import (same filename)
+_spec = importlib.util.spec_from_file_location(
+    "_features_base", Path(__file__).parent.parent.parent / "features.py")
+_base = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_base)
+
+candidate_numeric = _base.candidate_numeric
 
 # 7 pool aggregates + 3 grindState counts on top of base 17
 NUMERIC_DIM = 17 + 7 + 3  # 27
