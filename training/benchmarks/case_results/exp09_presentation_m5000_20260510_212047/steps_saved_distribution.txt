@@ -1,0 +1,89 @@
+% steps saved distribution for solved cases
+negative = neural_grind used more split steps
+positive = neural_grind saved split steps
+
+    <= -100%                                           0
+-100 to -50%                                           0
+ -50 to -25%                                           0
+ -25 to -10%  ####                                     1
+  -10 to <0%                                           0
+          0%  ######################################## 9
+    0 to 10%                                           0
+   10 to 25%  #########                                2
+   25 to 50%                                           0
+       > 50%                                           0
+
+Solved cases: 12
+Saved steps:  2
+Same steps:   9
+More steps:   1
+
+Total solved-case steps:
+  grind_collect: 72
+  neural_grind:  71
+  steps saved:   +1.39%
+
+Non-ok cases:
+  case=012 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=8 /- benchmark 012: mathlib/Order/min_lt_min_left_iff
+  case=013 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=2 /- benchmark 013: mathlib/Algebra/natAbs_odd
+  case=014 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=4 /- benchmark 014: mathlib/Order/Ico_diff_Ico_left
+  case=015 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=8 /- benchmark 015: mathlib/Order/Ioo_inter_Ioo
+  case=016 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=6 /- benchmark 016: mathlib/Topology/trans_prod_eq_prod_trans
+  case=017 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=4 /- benchmark 017: mathlib/Data/prod_diff_prod
+  case=018 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=5 /- benchmark 018: mathlib/Data/subset_singleton_iff
+  case=019 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=2 /- benchmark 019: mathlib/Data/insert_eq_of_mem
+  case=020 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=2 /- benchmark 020: mathlib/Order/compl_Ioc
+  case=021 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=4 /- benchmark 021: mathlib/Data/biUnion_inter
+  case=022 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=4 /- benchmark 022: mathlib/Order/Ioo_filter_lt
+  case=023 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=4 /- benchmark 023: mathlib/Order/Ioc_union_Ioc_symm
+  case=024 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=3 /- benchmark 024: mathlib/Algebra/even_sub
+  case=025 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=3 /- benchmark 025: workbook/workbook_30000_39999/lean_workbook_plus_32662
+  case=026 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=2 /- benchmark 026: workbook/workbook_00000_09999/lean_workbook_plus_141
+  case=027 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=1 /- benchmark 027: workbook/workbook_70000_79999/lean_workbook_plus_77164
+  case=028 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=2 /- benchmark 028: workbook/workbook_50000_59999/lean_workbook_plus_57616
+  case=029 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=2 /- benchmark 029: workbook/workbook_30000_39999/lean_workbook_plus_37542
+  case=030 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=3 /- benchmark 030: workbook/workbook_10000_19999/lean_workbook_plus_10625
+  case=031 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=3 /- benchmark 031: workbook/workbook_00000_09999/lean_workbook_plus_402
+  case=032 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=1 /- benchmark 032: workbook/workbook_60000_69999/lean_workbook_plus_61780
+  case=033 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=4 /- benchmark 033: workbook/workbook_10000_19999/lean_workbook_plus_14091
+  case=034 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=1 /- benchmark 034: workbook/workbook_30000_39999/lean_workbook_plus_31182
+  case=035 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=23 /- benchmark 035: workbook/workbook_20000_29999/lean_workbook_plus_29828
+  case=036 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=4 /- benchmark 036: workbook/workbook_10000_19999/lean_workbook_plus_13598
+  case=037 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=3 /- benchmark 037: workbook/workbook_40000_49999/lean_workbook_plus_48321
+  case=038 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=4 /- benchmark 038: workbook/workbook_30000_39999/lean_workbook_plus_38012
+  case=039 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=7 /- benchmark 039: workbook/workbook_80000_89999/lean_workbook_plus_80913
+  case=040 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=17 /- benchmark 040: workbook/workbook_70000_79999/lean_workbook_plus_75593
+  case=041 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=5 /- benchmark 041: workbook/workbook_10000_19999/lean_workbook_plus_14540
+  case=042 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=2 /- benchmark 042: workbook/workbook_60000_69999/lean_workbook_plus_62899
+  case=043 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=4 /- benchmark 043: workbook/workbook_50000_59999/lean_workbook_plus_56588
+  case=044 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=3 /- benchmark 044: workbook/workbook_80000_89999/lean_workbook_plus_82549
+  case=045 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=4 /- benchmark 045: workbook/workbook_00000_09999/lean_workbook_plus_2081
+  case=046 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=5 /- benchmark 046: workbook/workbook_50000_59999/lean_workbook_plus_54147
+  case=047 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=2 /- benchmark 047: workbook/workbook_30000_39999/lean_workbook_plus_32045
+  case=048 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=2 /- benchmark 048: workbook/workbook_80000_89999/lean_workbook_plus_81216
+  case=049 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=13 /- benchmark 049: workbook/workbook_40000_49999/lean_workbook_plus_40007
+  case=050 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=7 /- benchmark 050: numina/Inequalities/inequalities_181071
+  case=051 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=8 /- benchmark 051: numina/Algebra/algebra_135946
+  case=052 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=21 /- benchmark 052: numina/Inequalities/inequalities_205242
+  case=053 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=2 /- benchmark 053: numina/unknown/algebra_4744
+  case=054 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=12 /- benchmark 054: numina/Other/other_269148
+  case=055 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=21 /- benchmark 055: numina/Inequalities/inequalities_223947
+  case=056 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=21 /- benchmark 056: numina/Inequalities/inequalities_189838
+  case=057 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=12 /- benchmark 057: numina/unknown/algebra_101
+  case=058 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=3 /- benchmark 058: numina/Number Theory/algebra_635522
+  case=059 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=2 /- benchmark 059: numina/Algebra/algebra_97650
+  case=060 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=2 /- benchmark 060: numina/unknown/algebra_3430
+  case=061 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=3 /- benchmark 061: numina/NaN/algebra_272103
+  case=062 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=5 /- benchmark 062: numina/Algebra/algebra_242442
+  case=063 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=2 /- benchmark 063: numina/Algebra/algebra_291117
+  case=064 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=21 /- benchmark 064: numina/Inequalities/inequalities_190982
+  case=065 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=12 /- benchmark 065: numina/Inequalities/inequalities_220639
+  case=066 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=15 /- benchmark 066: numina/Inequalities/inequalities_319875
+  case=067 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=2 /- benchmark 067: numina/Algebra/algebra_218509
+  case=068 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=1 /- benchmark 068: numina/Number Theory/number_theory_111868
+  case=069 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=3 /- benchmark 069: numina/Other/other_71584
+  case=070 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=45 /- benchmark 070: numina/Inequalities/inequalities_115987
+  case=071 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=2 /- benchmark 071: numina/Combinatorics/combinatorics_239111
+  case=072 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=4 /- benchmark 072: numina/unknown/algebra_8833
+  case=073 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=3 /- benchmark 073: numina/Algebra/algebra_325177
+  case=074 status=fail steps_saved_pct=100.000000 neural_steps=0 grind_collect_splits=12 /- benchmark 074: numina/Inequalities/inequalities_131719

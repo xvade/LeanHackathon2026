@@ -1,0 +1,4 @@
+{"action":"fallback","reason":"below_margin","numCandidates":2,"thresholdMilli":5000,"anchor":18145468590974733826,"marginMilli":1944}
+{"action":"fallback","reason":"below_margin","numCandidates":6,"thresholdMilli":5000,"anchor":14570183311479155647,"marginMilli":0}
+{"action":"model","reason":"override","numCandidates":1,"thresholdMilli":5000,"anchor":18145468590974733826,"marginMilli":1000000000}
+{"action":"fallback","reason":"below_margin","numCandidates":4,"thresholdMilli":5000,"anchor":6270467907364531366,"marginMilli":0}

@@ -1,0 +1,29 @@
+Hackathon presentation summary
+
+Recommended framing:
+  We surgically replaced one decision inside Lean grind: which split to try next.
+  The confidence-gated neural policy keeps grind's native machinery, solves the full
+  split-active test set in this run, and stays essentially at native split-count parity
+  while still finding learned shortcut decisions on some problems.
+
+Headline numbers:
+  solved: 12/75 cases
+  failures: 63, timeouts: 0
+  equal-or-better split count: 11/12 solved cases
+  fewer split steps: 2
+  same split steps: 9
+  more split steps: 1
+  total solved-case split steps: neural_grind=71, grind_collect=72
+  aggregate split-step delta: -1 (+1.39% saved)
+  model overrides: 21
+  native fallbacks: 50
+
+Best shortcut examples:
+  case 000: 4 -> 3 splits (25.0% saved), mathlib/Logic/swap_apply_ne_self_iff
+  case 002: 4 -> 3 splits (25.0% saved), mathlib/Algebra/even_sign_iff
+
+Suggested wording:
+  This is a working neural guidance layer inside Lean's grind, not a separate prover.
+  The current safe mode is deliberately conservative: it delegates to native grind unless
+  the neural model has a large margin. That gives a reliable demo now, and the path to
+  improvement is clear: more shortcut traces and better confidence calibration.
