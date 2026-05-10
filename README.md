@@ -16,13 +16,9 @@ The second strategy involved leveraging several large-scale Lean datasets, colle
 - **Lean Workbook**: 57,231 formal statements.
 - **Herald**: 580,000 NL-FL statement pairs.
 - **FineLeanCorpus**: 509,358 formalization entries.
-- **LeanDojo-v2**: Integrated for broader repository-scale diversity.
+- **LeanDojo-v2**: 120,000 statements
 
-These datasets provide a vast collection of theorem statements that typically do not yet have accompanying proofs. From this pool, we have successfully verified and extracted proof traces for approximately **53,000 theorems**, with the following distribution of verified successes:
-- **Mathlib**: ~38,500 theorems.
-- **Numina & FineLean**: ~8,164 theorems.
-- **Lean Workbook**: ~4,168 theorems.
-- **Herald**: ~2,211 theorems.
+These datasets provide a vast collection of theorem statements that typically do not yet have accompanying proofs. From this pool, we have successfully verified and extracted proof traces for approximately **53,000 theorems** that work with either grind or aesop.
 
 This collection forms the core of our training data, representing a diverse "Winning Spine" for both `grind` and `aesop` across different domains.
 
