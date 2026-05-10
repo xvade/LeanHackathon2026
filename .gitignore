@@ -20,6 +20,9 @@ training/data/collected*.jsonl
 .venv/
 venv/
 env/
+.env
+.env.*
+!.env.example
 
 # Editor
 .vscode/
