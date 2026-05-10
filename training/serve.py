@@ -22,13 +22,14 @@ from pathlib import Path
 import torch
 
 sys.path.insert(0, str(Path(__file__).parent))
-from features import batch_numeric, batch_trigrams
+from features import batch_numeric, batch_trigrams, context_trigrams, GRIND_STATE_MAX_EVENTS
 from model import SplitRanker
 
 
 def load_model(path: str) -> SplitRanker:
-    m = SplitRanker()
-    m.load_state_dict(torch.load(path, map_location="cpu", weights_only=True))
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    m = SplitRanker().to(device)
+    m.load_state_dict(torch.load(path, map_location=device, weights_only=True))
     m.eval()
     return m
 
@@ -38,10 +39,14 @@ def score_candidates(model: SplitRanker, req: dict) -> torch.Tensor:
     goal  = req.get("goalFeatures", {})
     if not cands:
         return torch.zeros(0)
+    device = next(model.parameters()).device
     with torch.no_grad():
-        numeric  = batch_numeric(cands, goal)
-        text_ids = batch_trigrams(cands)
-        return model(numeric, text_ids)
+        numeric   = batch_numeric(cands, goal).to(device)
+        text_ids  = batch_trigrams(cands).to(device)
+        state_ids = context_trigrams(req.get("statePP", [])).to(device)
+        grind_ids = context_trigrams(req.get("grindState", []),
+                                     max_events=GRIND_STATE_MAX_EVENTS).to(device)
+        return model(numeric, text_ids, state_ids, grind_ids)
 
 
 def serve(args):

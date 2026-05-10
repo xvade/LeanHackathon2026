@@ -29,15 +29,41 @@ import torch.nn.functional as F
 from torch.optim import Adam
 
 sys.path.insert(0, str(Path(__file__).parent))
-from features import batch_numeric, batch_trigrams
+from features import batch_numeric, batch_trigrams, context_trigrams, GRIND_STATE_MAX_EVENTS
 from model import SplitRanker
+
+
+def normalize_record(record: dict) -> dict | None:
+    """
+    Normalize to {outcome, steps} regardless of source schema:
+      - neural_collect: {outcome, steps: [{candidates, chosenAnchor, goalFeatures}]}
+      - grind_collect:  {solved,  splitDecisions: [{pool, chosenAnchor, goalFeatures}]}
+    """
+    if "outcome" in record:
+        return record
+    if "solved" in record and "splitDecisions" in record:
+        return {
+            "outcome": "success" if record["solved"] else "failure",
+            "steps": [
+                {
+                    "step":         d.get("step", i),
+                    "goalFeatures": d.get("goalFeatures", {}),
+                    "candidates":   d.get("pool", []),
+                    "chosenAnchor": d.get("chosenAnchor"),
+                    "statePP":      d.get("statePP", []),
+                    "grindState":   d.get("grindState", []),
+                }
+                for i, d in enumerate(record["splitDecisions"])
+            ],
+        }
+    return None
 
 
 def load_examples_rl(path: str, reward_success: float = 1.0,
                      reward_failure: float = -1.0) -> list[dict]:
     """
     Load all decision steps from JSONL, labelled with step-count-scaled rewards.
-    Both successful and failed proofs are included.
+    Both successful and failed proofs are included (both schemas accepted).
     Steps with < 2 candidates are skipped (no real choice was made).
 
     Reward for success = reward_success / num_steps: shorter proofs score higher.
@@ -53,6 +79,9 @@ def load_examples_rl(path: str, reward_success: float = 1.0,
                 record = json.loads(line)
             except json.JSONDecodeError:
                 continue
+            record = normalize_record(record)
+            if record is None:
+                continue
             steps = record.get("steps", [])
             num_steps = max(len(steps), 1)
             if record.get("outcome") == "success":
@@ -64,16 +93,21 @@ def load_examples_rl(path: str, reward_success: float = 1.0,
                 chosen = step.get("chosenAnchor")
                 if len(cands) < 2 or chosen is None:
                     continue
+                # anchor may be int or string — compare as strings for safety
+                chosen_s = str(chosen)
                 target = next(
-                    (i for i, c in enumerate(cands) if c["anchor"] == chosen), None
+                    (i for i, c in enumerate(cands) if str(c["anchor"]) == chosen_s),
+                    None,
                 )
                 if target is None:
                     continue
                 examples.append({
                     "goalFeatures": step["goalFeatures"],
-                    "candidates": cands,
-                    "target": target,
-                    "reward": reward,
+                    "candidates":   cands,
+                    "target":       target,
+                    "reward":       reward,
+                    "statePP":      step.get("statePP", []),
+                    "grindState":   step.get("grindState", []),
                 })
     return examples
 
@@ -94,13 +128,15 @@ def train_rl(args) -> None:
     print(f"Loaded {len(examples)} decision steps  "
           f"(+reward: {n_success}, -reward: {n_failure})", flush=True)
 
-    model = SplitRanker()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = SplitRanker().to(device)
     if args.init and Path(args.init).exists():
         print(f"Warm-starting from {args.init}", flush=True)
         model.load_state_dict(
-            torch.load(args.init, map_location="cpu", weights_only=True)
+            torch.load(args.init, map_location=device, weights_only=True)
         )
     optimizer = Adam(model.parameters(), lr=args.lr)
+    print(f"device={device}", flush=True)
 
     for epoch in range(1, args.epochs + 1):
         random.shuffle(examples)
@@ -113,7 +149,7 @@ def train_rl(args) -> None:
 
         # Accumulate loss over all examples before stepping (batch update).
         # Per-example steps cause high-variance updates that diverge on small datasets.
-        batch_loss = torch.tensor(0.0, requires_grad=False)
+        batch_loss = torch.zeros(1, device=device, requires_grad=False)
         updates = 0
 
         for ex in examples:
@@ -125,10 +161,13 @@ def train_rl(args) -> None:
             goal     = ex["goalFeatures"]
             target   = ex["target"]
 
-            numeric  = batch_numeric(cands, goal)
-            text_ids = batch_trigrams(cands)
+            numeric   = batch_numeric(cands, goal).to(device)
+            text_ids  = batch_trigrams(cands).to(device)
+            state_ids = context_trigrams(ex.get("statePP", [])).to(device)
+            grind_ids = context_trigrams(ex.get("grindState", []),
+                                         max_events=GRIND_STATE_MAX_EVENTS).to(device)
 
-            scores    = model(numeric, text_ids)          # (N,)
+            scores    = model(numeric, text_ids, state_ids, grind_ids)   # (N,)
             log_probs = F.log_softmax(scores, dim=0)      # (N,)
 
             # REINFORCE: maximise E[log π(a) * advantage]; average over batch

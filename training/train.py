@@ -26,12 +26,39 @@ from torch.optim import Adam
 
 # Allow imports from this directory
 sys.path.insert(0, str(Path(__file__).parent))
-from features import batch_numeric, batch_trigrams
+from features import batch_numeric, batch_trigrams, context_trigrams, GRIND_STATE_MAX_EVENTS
 from model import SplitRanker
 
 
+def normalize_record(record: dict) -> dict | None:
+    """
+    Normalize a proof record to a common schema regardless of source:
+      - neural_collect:  {outcome, steps: [{candidates, chosenAnchor, goalFeatures}]}
+      - grind_collect:   {solved,  splitDecisions: [{pool, chosenAnchor, goalFeatures}]}
+    Returns a dict with {outcome, steps} or None if unrecognized.
+    """
+    if "outcome" in record:
+        return record
+    if "solved" in record and "splitDecisions" in record:
+        return {
+            "outcome": "success" if record["solved"] else "failure",
+            "steps": [
+                {
+                    "step":         d.get("step", i),
+                    "goalFeatures": d.get("goalFeatures", {}),
+                    "candidates":   d.get("pool", []),
+                    "chosenAnchor": d.get("chosenAnchor"),
+                    "statePP":      d.get("statePP", []),
+                    "grindState":   d.get("grindState", []),
+                }
+                for i, d in enumerate(record["splitDecisions"])
+            ],
+        }
+    return None
+
+
 def load_examples(path: str) -> list[dict]:
-    """Return list of decision steps from successful proofs."""
+    """Return list of decision steps from successful proofs (both schemas)."""
     examples = []
     with open(path) as f:
         for line in f:
@@ -42,35 +69,42 @@ def load_examples(path: str) -> list[dict]:
                 record = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            if record.get("outcome") != "success":
+            record = normalize_record(record)
+            if record is None or record.get("outcome") != "success":
                 continue
             for step in record.get("steps", []):
                 cands = step.get("candidates", [])
                 chosen = step.get("chosenAnchor")
                 if len(cands) < 2 or chosen is None:
                     continue
+                # anchor may be int or string — compare as strings for safety
+                chosen_s = str(chosen)
                 target_idx = next(
-                    (i for i, c in enumerate(cands) if c["anchor"] == chosen), None
+                    (i for i, c in enumerate(cands) if str(c["anchor"]) == chosen_s),
+                    None,
                 )
                 if target_idx is None:
                     continue
                 examples.append({
                     "goalFeatures": step["goalFeatures"],
-                    "candidates": cands,
-                    "target": target_idx,
+                    "candidates":   cands,
+                    "target":       target_idx,
+                    "statePP":      step.get("statePP", []),
+                    "grindState":   step.get("grindState", []),
                 })
     return examples
 
 
 def train(args):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Loading data from {args.data} …", flush=True)
     examples = load_examples(args.data)
     if not examples:
         print("No training examples found (need successful proofs with ≥2 candidates).")
         return
 
-    print(f"Loaded {len(examples)} decision steps.", flush=True)
-    model = SplitRanker()
+    print(f"Loaded {len(examples)} decision steps.  device={device}", flush=True)
+    model = SplitRanker().to(device)
     optimizer = Adam(model.parameters(), lr=args.lr)
     loss_fn = nn.CrossEntropyLoss()
 
@@ -79,16 +113,19 @@ def train(args):
         correct = 0
         model.train()
         for ex in examples:
-            cands = ex["candidates"]
-            goal = ex["goalFeatures"]
+            cands  = ex["candidates"]
+            goal   = ex["goalFeatures"]
             target = ex["target"]
 
-            numeric = batch_numeric(cands, goal)
-            text_ids = batch_trigrams(cands)
-            target_t = torch.tensor([target], dtype=torch.long)
+            numeric   = batch_numeric(cands, goal).to(device)
+            text_ids  = batch_trigrams(cands).to(device)
+            state_ids = context_trigrams(ex.get("statePP", [])).to(device)
+            grind_ids = context_trigrams(ex.get("grindState", []),
+                                         max_events=GRIND_STATE_MAX_EVENTS).to(device)
+            target_t  = torch.tensor([target], dtype=torch.long, device=device)
 
-            scores = model(numeric, text_ids)          # (N,)
-            loss = loss_fn(scores.unsqueeze(0), target_t)  # CE over N classes
+            scores = model(numeric, text_ids, state_ids, grind_ids)
+            loss   = loss_fn(scores.unsqueeze(0), target_t)
 
             optimizer.zero_grad()
             loss.backward()

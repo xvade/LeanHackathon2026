@@ -102,31 +102,39 @@ private def getOrStartModelServer : IO (Option ModelServer) := do
 
 /--
 Send a decision query to serve.py and return the chosen anchor.
+Sends goalFeatures, candidates (with generation), statePP, and grindState.
 Returns 0 on error (caller falls back to heuristic).
 -/
-private def queryModelServer (gfJson : String) (candsJson : String) : IO UInt64 := do
+private def queryModelServer (gfJson : String) (candsJson : String)
+    (statePPJson : String) (grindStateJson : String) : IO UInt64 := do
   let some srv ← getOrStartModelServer | return 0
   try
-    let query := "{\"goalFeatures\":" ++ gfJson ++ ",\"candidates\":" ++ candsJson ++ "}\n"
+    let query :=
+      "{\"goalFeatures\":"  ++ gfJson       ++
+      ",\"candidates\":"    ++ candsJson    ++
+      ",\"statePP\":"       ++ statePPJson  ++
+      ",\"grindState\":"    ++ grindStateJson ++ "}\n"
     srv.stdinH.putStr query
     srv.stdinH.flush
     let line ← srv.stdoutH.getLine
-    -- The response is just the anchor integer as a decimal string
     let digits := String.ofList (line.toList.filter (·.isDigit))
     match digits.toNat? with
     | some n => return UInt64.ofNat n
     | none   => return 0
   catch _ =>
-    -- Clear the stale server ref so we restart on next query
     modelServerRef.set none
     return 0
+
+-- Grind trace classes whose events we accumulate as grindState context
+private def GRIND_STATE_CLASSES : List Name :=
+  [`grind.assert, `grind.eqc, `grind.ematch.instance.assignment]
 
 -- ---------------------------------------------------------------------------
 -- The split action with logging
 -- ---------------------------------------------------------------------------
 
-private def collectSplitNext (stopAtFirstFailure := true) (compress := true) :
-    Action :=
+private def collectSplitNext (proofSnapStart : Nat)
+    (stopAtFirstFailure := true) (compress := true) : Action :=
   fun goal kna kp => do
     let (anchors, goal') ← GoalM.run goal getSplitCandidateAnchors
     if anchors.candidates.isEmpty then
@@ -136,7 +144,7 @@ private def collectSplitNext (stopAtFirstFailure := true) (compress := true) :
       let candPPs ← anchors.candidates.mapM fun c =>
         Format.pretty <$> ppExpr c.e
 
-      -- Build JSON for logging / model query
+      -- goalFeatures JSON
       let splitDepth   := goal'.split.num
       let assertedCnt  := goal'.facts.size
       let ematchRounds := goal'.ematch.num
@@ -148,16 +156,44 @@ private def collectSplitNext (stopAtFirstFailure := true) (compress := true) :
         ",\"ematchRounds\":"  ++ toString ematchRounds ++
         ",\"splitTraceLen\":" ++ toString traceLen     ++
         ",\"numCandidates\":" ++ toString numCands     ++ "}"
-      let candJsons := (anchors.candidates.zip candPPs).map fun (c, pp) =>
-        "{\"anchor\":"   ++ toString c.anchor                          ++
-        ",\"exprText\":" ++ jsonStr pp                                 ++
-        ",\"numCases\":" ++ toString c.numCases                        ++
-        ",\"isRec\":"    ++ (if c.isRec then "true" else "false")      ++
-        ",\"source\":"   ++ jsonStr (sourceTagStr c.c)                 ++ "}"
+
+      -- candidates JSON — now includes generation
+      let candJsons ← (anchors.candidates.zip candPPs).mapM fun (c, pp) => do
+        let gen := goal'.getGeneration c.e
+        let j :=
+          "{\"anchor\":"     ++ toString c.anchor                     ++
+          ",\"exprText\":"   ++ jsonStr pp                            ++
+          ",\"numCases\":"   ++ toString c.numCases                   ++
+          ",\"isRec\":"      ++ (if c.isRec then "true" else "false") ++
+          ",\"source\":"     ++ jsonStr (sourceTagStr c.c)            ++
+          ",\"generation\":" ++ toString gen                          ++ "}"
+        return j
       let candsArr := "[" ++ ",".intercalate candJsons.toList ++ "]"
 
-      -- Try model server first; fall back to heuristic
-      let modelAnchor ← queryModelServer gfJson candsArr
+      -- statePP: local hypotheses + goal (what the infoview shows)
+      let decl ← goal'.mvarId.getDecl
+      let hyps ← decl.lctx.foldlM (init := #[]) fun acc d => do
+        if d.isImplementationDetail then return acc
+        let tp := Format.pretty (← ppExpr d.type)
+        return acc.push (jsonStr s!"{d.userName} : {tp}")
+      let goalTP := Format.pretty (← ppExpr (← goal'.mvarId.getType))
+      let statePPArr := hyps.push (jsonStr s!"⊢ {goalTP}")
+      let statePPJson := "[" ++ ",".intercalate statePPArr.toList ++ "]"
+
+      -- grindState: grind.assert / grind.eqc / grind.ematch events since proof start
+      let allTraces := (← getTraceState).traces
+      let grindEvts ← (allTraces.toArray.extract proofSnapStart allTraces.size).foldlM
+        (init := #[]) fun acc elem => do
+          match elem.msg with
+          | .trace data inner _ =>
+            if GRIND_STATE_CLASSES.contains data.cls then
+              return acc.push (jsonStr (Format.pretty (← inner.format)))
+            else return acc
+          | _ => return acc
+      let grindStateJson := "[" ++ ",".intercalate grindEvts.toList ++ "]"
+
+      -- Try model server; fall back to heuristic
+      let modelAnchor ← queryModelServer gfJson candsArr statePPJson grindStateJson
       let modelCand? : Option SplitCandidateWithAnchor :=
         if modelAnchor != 0 then anchors.candidates.find? (·.anchor == modelAnchor)
         else none
@@ -170,15 +206,16 @@ private def collectSplitNext (stopAtFirstFailure := true) (compress := true) :
         | none         => hBest := some (c, s)
         | some (_, bs) => if s > bs then hBest := some (c, s)
 
-      -- bestCand: model choice if valid, otherwise heuristic winner
       let some bestCand :=
           modelCand?.orElse (fun _ => hBest.map Prod.fst) | kna goal'
 
-      -- Log this step
+      -- Log this step (rich schema matching grind_collect output)
       let stepIdx ← nextStepIdxV2
       let stepJson :=
         "{\"step\":"          ++ toString stepIdx        ++
         ",\"goalFeatures\":"  ++ gfJson                  ++
+        ",\"statePP\":"       ++ statePPJson              ++
+        ",\"grindState\":"    ++ grindStateJson           ++
         ",\"candidates\":"    ++ candsArr                ++
         ",\"chosenAnchor\":"  ++ toString bestCand.anchor ++ "}"
       appendStepV2 stepJson
@@ -197,11 +234,11 @@ private def collectSplitNext (stopAtFirstFailure := true) (compress := true) :
 -- Action loop (mirrors mkNeuralFinish / mkFinish)
 -- ---------------------------------------------------------------------------
 
-private def mkCollectFinish (maxIterations : Nat := Action.maxIterationsDefault) :
-    IO Action := do
+private def mkCollectFinish (proofSnapStart : Nat)
+    (maxIterations : Nat := Action.maxIterationsDefault) : IO Action := do
   let solvers ← Solvers.mkAction
   let step : Action :=
-    solvers <|> Action.instantiate <|> collectSplitNext <|> Action.mbtc
+    solvers <|> Action.instantiate <|> collectSplitNext proofSnapStart <|> Action.mbtc
   return Action.checkTactic (warnOnly := true) >>
          Action.intros 0 >>
          Action.assertAll >>
@@ -211,9 +248,10 @@ private def mkCollectFinish (maxIterations : Nat := Action.maxIterationsDefault)
 -- Per-goal runner (mirrors neuralMain in Tactic.lean)
 -- ---------------------------------------------------------------------------
 
-private def collectMain (mvarId : MVarId) (params : Params) : MetaM Result :=
+private def collectMain (mvarId : MVarId) (params : Params)
+    (proofSnapStart : Nat) : MetaM Result :=
   GrindM.runAtGoal mvarId params fun goal => do
-    let finish ← mkCollectFinish
+    let finish ← mkCollectFinish proofSnapStart
     let failure? ← match (← finish.run goal) with
       | .closed _       => pure none
       | .stuck (g :: _) => pure (some g)
@@ -248,13 +286,20 @@ def evalNeuralCollect : Tactic := fun _ => do
   -- Reset step log for this proof
   initProofLogV2
 
+  -- Enable grind state trace classes and snapshot trace index before proof starts
+  -- so collectSplitNext can accumulate grind.assert / grind.eqc events.
+  let proofSnapStart := (← getTraceState).traces.size
+
   -- Run the proof, record outcome, flush log
-  withProtectedMCtx config mvarId fun mvarId' => do
-    let result ← collectMain mvarId' params
-    let outcome := if result.hasFailed then "failure" else "success"
-    flushProofLogV2 proofId outcome
-    if result.hasFailed then
-      throwError "`neural_collect` failed\n{← result.toMessageData}"
-    replaceMainGoal []
+  withOptions (fun opts =>
+    GRIND_STATE_CLASSES.foldl (fun o cls => o.setBool (`trace ++ cls) true) opts
+  ) do
+    withProtectedMCtx config mvarId fun mvarId' => do
+      let result ← collectMain mvarId' params proofSnapStart
+      let outcome := if result.hasFailed then "failure" else "success"
+      flushProofLogV2 proofId outcome
+      if result.hasFailed then
+        throwError "`neural_collect` failed\n{← result.toMessageData}"
+      replaceMainGoal []
 
 end NeuralTactic

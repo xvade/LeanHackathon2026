@@ -68,7 +68,6 @@ No-ops when `GRIND_LOG` is unset or when no steps were recorded.
 def flushProofLogV2 (proofId : UInt64) (outcome : String) : IO Unit := do
   let some logPath ← IO.getEnv "GRIND_LOG" | return
   let steps ← proofStepsV2.get
-  if steps.isEmpty then return
   let stepsArr := "[" ++ ",".intercalate steps.toList ++ "]"
   let record :=
     "{\"proofId\":"  ++ toString proofId  ++

@@ -1,0 +1,7 @@
+Input  : /home/ec2-user/LeanHackathon/LeanHackathon2026/training/grind_results_verified.jsonl  (739KB)
+Output : training/data/verified_splits.jsonl
+Project: /home/ec2-user/LeanHackathon/LeanHackathon2026/GrindExtraction
+Loaded 747 verified theorems.
+Transformed 747 snippets.
+Writing 38 batch files…
+Running 38 batches with 8 worker(s), timeout=180s…
