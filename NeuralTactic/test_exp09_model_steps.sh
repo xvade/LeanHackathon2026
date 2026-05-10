@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SELF="$ROOT/test_exp09_model_steps.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SELF="$SCRIPT_DIR/test_exp09_model_steps.sh"
 
 PROFILE="${PROFILE:-${1:-both}}"
 
 if [[ "$PROFILE" == "both" ]]; then
   BASE_STAMP="${STAMP:-exp09_two_profile_$(date -u +%Y%m%d_%H%M%S)}"
-  BASE_RESULT_DIR="${RESULT_DIR:-$ROOT/training/benchmarks/case_results/$BASE_STAMP}"
+  BASE_RESULT_DIR="${RESULT_DIR:-$SCRIPT_DIR/results/$BASE_STAMP}"
   COMPARISON_TXT="$BASE_RESULT_DIR/two_profile_summary.txt"
   mkdir -p "$BASE_RESULT_DIR"
 
@@ -117,17 +118,17 @@ fi
 
 case "$PROFILE" in
   safe)
-    DEFAULT_MODEL="$ROOT/training/experiments/exp09_heuristics/model_shortcut_latest.native.bin"
+    DEFAULT_MODEL="$REPO_ROOT/training/experiments/exp09_heuristics/model_shortcut_latest.native.bin"
     DEFAULT_MARGIN="5000"
     PROFILE_DESC="safe confidence-gated mode: full held-out solve rate and near native split-count parity"
     ;;
   aggressive)
-    DEFAULT_MODEL="$ROOT/training/experiments/exp09_heuristics/model_shortcut_final.native.bin"
+    DEFAULT_MODEL="$REPO_ROOT/training/experiments/exp09_heuristics/model_shortcut_final.native.bin"
     DEFAULT_MARGIN="1000"
     PROFILE_DESC="aggressive shortcut mode: more neural override choices and more visible learned shortcuts"
     ;;
   custom)
-    DEFAULT_MODEL="$ROOT/training/experiments/exp09_heuristics/model.native.bin"
+    DEFAULT_MODEL="$REPO_ROOT/training/experiments/exp09_heuristics/model.native.bin"
     DEFAULT_MARGIN="0"
     PROFILE_DESC="custom mode: caller-provided MODEL and MARGIN"
     ;;
@@ -144,16 +145,16 @@ case "$PROFILE" in
 esac
 
 MODEL="${MODEL:-$DEFAULT_MODEL}"
-SERVE="${SERVE:-$ROOT/training/experiments/exp09_heuristics/native_serve}"
-NATIVE_SRC="$ROOT/NeuralTactic/native/model.cpp"
-RUNNER="$ROOT/training/benchmarks/run_split_active_cases.sh"
+SERVE="${SERVE:-$SCRIPT_DIR/native_serve}"
+NATIVE_SRC="$SCRIPT_DIR/native/model.cpp"
+RUNNER="$REPO_ROOT/training/benchmarks/run_split_active_cases.sh"
 CXX="${CXX:-c++}"
 
 MARGIN="${MARGIN:-$DEFAULT_MARGIN}"
 JOBS="${JOBS:-4}"
 TIMEOUT="${TIMEOUT:-90}"
 STAMP="${STAMP:-exp09_${PROFILE}_m${MARGIN}_$(date -u +%Y%m%d_%H%M%S)}"
-RESULT_DIR="${RESULT_DIR:-$ROOT/training/benchmarks/case_results/$STAMP}"
+RESULT_DIR="${RESULT_DIR:-$SCRIPT_DIR/results/$STAMP}"
 STEPS_TSV="$RESULT_DIR/steps.tsv"
 DISTRIBUTION_TSV="$RESULT_DIR/steps_saved_distribution.tsv"
 DISTRIBUTION_TXT="$RESULT_DIR/steps_saved_distribution.txt"

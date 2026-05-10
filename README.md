@@ -30,13 +30,36 @@ For `aesop`, we employed a similar verification protocol but introduced a refine
 
 ### Aesop Trace Extraction
 
+
 ### Grind Trace Extraction
+We instrumented the `grind` tactic to capture the internal state and decision-making process at every "split" (branching point) during proof search. This instrumentation allows us to record the precisely timed "snapshots" of the prover's state.
+
+**The Trace Data:**
+For every successful proof, we extract a JSON trace containing:
+- **Goal Features**: Numerical summaries such as `assertedCount` (total known facts), `ematchRounds`, and `splitDepth`.
+- **Candidate Pool**: The full set of available branching options (e.g., case splits on an `if-then-else` or an implication), including their origins (`ematch`, `ext`, `input`, etc.).
+- **Environmental Context**: A "Pretty-Printed" version of the local context and the internal state of the E-graph (the robot's "brain").
+- **Winning Spine**: We prune these traces to retain only the "Winning Spine"—the sequence of successful decisions that directly led to the proof, discarding any exploratory dead ends.
 
 ## Training
 
 ### Aesop Training
 
+
 ### Grind Training
+To leverage the extracted trace data, we trained a lightweight neural model designed to predict the optimal next step in a `grind` proof search.
+
+**Model Architecture:**
+- **Type**: A 3-layer Multi-Layer Perceptron (MLP).
+- **Size**: ~74,500 parameters
+- **Input**: A 32-dimensional feature vector encoding the goal state, the specific candidate branch, and its relationship to the rest of the candidate pool.
+- **Inference**: Optimized for speed, the model runs in a native C++ server with an inference time of **< 1ms**, enabling its use directly within the Lean tactic loop.
+
+**Training Strategy:**
+- **Objective**: The model is trained using Cross-Entropy Loss to maximize the score of the "Winning Spine" candidate within its original pool of alternatives.
+- **Efficiency Weighting**: We apply a weighting formula ($W = 1 / \sqrt{\text{total\_splits}}$) to the training loss. This incentivizes the model to prioritize decisions from shorter, more efficient proofs, effectively learning "shortcuts" over the native heuristic's often exhaustive search.
+- **Evaluation**: We maintain a stable benchmark of 75 problems (balanced across Mathlib, Workbook, and Numina) that are strictly excluded from the training set to measure the model's generalization and split-reduction capabilities.
+
 
 ## Project Note
-Given the limited timeframe of the hackathon, this project serves as a focused investigation into the scaling potential of neural-guided proof search. Our primary interest was in projecting what the results would look like in the "actual end"—leveraging the full scale of the 53,000+ theorem dataset to move toward a highly efficient, zero-exploration automated prover.
+This project serves as a focused investigation into the scaling potential of neural-guided proof search. Our primary interest was in projecting what the results would look like in the "actual end"—leveraging the full scale of the 53,000+ theorem dataset to move toward a highly efficient, zero-exploration automated prover.

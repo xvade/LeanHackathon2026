@@ -13,8 +13,6 @@ package NeuralTactic where
 
 require mathlib from git "https://github.com/leanprover-community/mathlib4" @ "v4.30.0-rc2"
 
-require aesop_with_overrides from "../aesop_with_overrides"
-
 -- Compile native/model.cpp into a static library.
 -- This provides the optional C++ exp08 scorer used by GRIND_NATIVE_MODEL=exp08.
 target neuralModelO pkg : FilePath := do

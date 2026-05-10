@@ -1,4 +1,6 @@
-The following is a real record from our dataset. It represents a proof of a theorem about function composition and preimages.
+# Neural Grind Data Explainer
+
+The following is an abbreviated real record from the dataset. It represents a proof of a theorem about function composition and preimages. Long internal `grindState` entries are shortened for readability.
 
 ```json
 {
@@ -65,10 +67,10 @@ The following is a real record from our dataset. It represents a proof of a theo
 *   **`theoremName`**: The unique identifier of the theorem (e.g., its Mathlib path).
 *   **`goalPP`**: The "Pretty-Printed" version of the original goal we are trying to prove.
 *   **`solved`**: A boolean indicating if native `grind` was able to finish this proof. We only train on `true` cases.
-*   **`splitDecisions`**: An array of every time the robot had to make a choice.
+*   **`splitDecisions`**: An array of every time the tactic had to make a split choice.
 
 ### The Decision Object
-Each decision in `splitDecisions` is a "snapshot" of the robot's brain at a specific junction.
+Each decision in `splitDecisions` is a snapshot of the tactic state at a specific branching point.
 
 #### A. Goal Features (The "Sensors")
 These are numerical summaries of the current proof state:
@@ -99,7 +101,7 @@ This is the list of branches the robot is looking at.
 To explain this project to others, use the **Maze Analogy**:
 
 1.  **The Proof is a Maze**: Proving a theorem is like finding a path through a giant, branching maze to an exit called "The Proof."
-2.  **The Expert (Native Grind)**: Lean's built-in `grind` tactic is an expert that knows how to navigate the maze using a set of rules (Heuristics). However, the expert is often slow and explores many dead ends.
+2.  **The Expert (Native Grind)**: Lean's built-in `grind` tactic knows how to navigate the maze using a set of rules (heuristics). However, it can spend time exploring branches that do not directly contribute to the final proof.
 3.  **The Data (Exploration vs. Winning Path)**: Our tool watches the expert navigate. We record every turn it makes. Crucially, we then **Prune** the data—we delete all the turns that led to dead ends and only keep the "Winning Spine."
 4.  **The Model (The Shortcut Predictor)**: We train a tiny Neural Network to look at 32 "sensors" (our features) and predict only those winning turns.
 ## 4. Model Input/Output: How the Neural Network Thinks
@@ -141,8 +143,8 @@ The neural network is a 3-layer Multi-Layer Perceptron (MLP):
 *   **Binary Size**: **291 KB**
 *   **Inference Time**: **< 1ms** (Running in a native C++ server).
 
-### Data Volume (The "Re-collection" Run)
-We are currently generating a massive dataset to achieve high stability:
-*   **Total Lean Problems**: **~53,000** verified theorems.
+### Data Volume
+The collection pipeline is designed to scale to a large theorem corpus:
+*   **Target Lean Problems**: **~53,000** verified theorems.
 *   **Source Diversity**: Mathlib, Competition Problems (Workbook), IMO-style problems (Numina).
 *   **Total Decisions**: Estimated **~65,000** exploration branches, which are pruned down to **~50,000** "Winning Shortcut" steps for training.
