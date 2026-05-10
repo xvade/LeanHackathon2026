@@ -422,6 +422,11 @@ def run_batch(lean_file_str: str, log_file_str: str,
     if "GRIND_MODEL" in env and "GRIND_SERVE" not in env:
         serve_default = Path(__file__).parent / "serve.py"
         env["GRIND_SERVE"] = str(serve_default)
+    # Prepend the current Python's bin dir to PATH so that when Lean spawns
+    # `python3 serve.py`, it finds the same interpreter (conda/venv) that
+    # collect.py itself is running under — not the system /usr/bin/python3.
+    python_bin = str(Path(sys.executable).parent)
+    env["PATH"] = python_bin + ":" + env.get("PATH", "")
 
     t0 = time.monotonic()
     try:

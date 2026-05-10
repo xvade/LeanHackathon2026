@@ -69,12 +69,26 @@ def evalGrindTrace : Tactic := fun _ => do
 -- ── grind_collect (full candidate pool with grind's actual choice) ────────────
 
 structure CandidateInfo where
-  pp : String  -- human-readable expression; fed directly to the ranking model
+  anchor : UInt64
+  exprText : String
+  numCases : Nat
+  isRec : Bool
+  source : String
+  deriving ToJson
+
+structure GoalFeatures where
+  splitDepth : Nat
+  assertedCount : Nat
+  ematchRounds : Nat
+  splitTraceLen : Nat
+  numCandidates : Nat
   deriving ToJson
 
 structure SplitDecision where
-  pool      : Array CandidateInfo
-  chosenIdx : Nat  -- index of the candidate grind's heuristic selected
+  step : Nat
+  goalFeatures : GoalFeatures
+  pool : Array CandidateInfo
+  chosenAnchor : UInt64
   deriving ToJson
 
 structure CollectSample where
@@ -108,10 +122,18 @@ def collectingAction
     if anchors.candidates.isEmpty then
       kna goal
     else
-      -- Build the pool: just pretty-printed expressions, no serialization
+      -- Build the pool: include anchor, exprText, numCases, isRec, source
       let (pool, _) ← GoalM.run goal do
         anchors.candidates.mapM fun c => do
-          return { pp := Format.pretty (← ppExpr c.e) : CandidateInfo }
+          let pp := Format.pretty (← ppExpr c.e)
+          return { anchor := c.anchor, exprText := pp, numCases := c.numCases, isRec := c.isRec, source := "" : CandidateInfo }
+      let numCandidates := anchors.candidates.size
+      -- goal features
+      let splitDepth := goal.split.num
+      let assertedCount := goal.facts.size
+      let ematchRounds := goal.ematch.num
+      let splitTraceLen := goal.split.trace.length
+      let goalFeatures := GoalFeatures.mk splitDepth assertedCount ematchRounds splitTraceLen numCandidates
       -- Enable grind.split trace to observe grind's actual choice
       let snapBefore := (← getTraceState).traces.size
       let result ← (Action.splitNext (stopAtFirstFailure := true) compress) goal kna kp
@@ -130,10 +152,21 @@ def collectingAction
             else return none
           | _ => return none
       ) (none : Option String)
-      let chosenIdx := match chosenPP? with
-        | none    => 0  -- fallback: trace not captured (shouldn't happen)
-        | some pp => (pool.toList.findIdx? fun c => c.pp == pp).getD 0
-      decisions.modify fun ds => ds.push { pool, chosenIdx }
+      -- Resolve chosenAnchor by matching chosen pretty-print to pool entries and using anchors array
+      let chosenAnchor := match chosenPP? with
+        | none => match anchors.candidates.toList with
+          | [] => 0
+          | a :: _ => SplitCandidateWithAnchor.anchor a
+        | some pp =>
+          let pairs := List.zip (anchors.candidates.toList) (pool.toList)
+          match List.find? (fun p => CandidateInfo.exprText (Prod.snd p) == pp) pairs with
+          | some p => SplitCandidateWithAnchor.anchor (Prod.fst p)
+          | none => match anchors.candidates.toList with
+            | [] => 0
+            | a :: _ => SplitCandidateWithAnchor.anchor a
+      let cur ← decisions.get
+      let stepIdx := cur.size
+      decisions.modify fun ds => ds.push { step := stepIdx, goalFeatures := goalFeatures, pool := pool, chosenAnchor := chosenAnchor }
       return result
 
 /-- Assemble a finish action that collects split decisions. -/
