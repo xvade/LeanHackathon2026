@@ -1,0 +1,31 @@
+{
+  "n_records": 1697,
+  "default_success": 1697,
+  "custom_success": 1697,
+  "both_succeed": 1697,
+  "comparison_basis": "both_succeed",
+  "wall_seconds": {
+    "default_mean": 4.381405390170003,
+    "custom_mean": 4.395308180916259,
+    "custom_faster": 848,
+    "tie_or_default_faster": 849
+  },
+  "aesop_total_ms": {
+    "default_mean": 0.0,
+    "custom_mean": 0.0
+  },
+  "rule_applications": {
+    "default_mean": 8.347083087802003,
+    "custom_mean": 8.088391278727165,
+    "custom_fewer": 11
+  },
+  "failed_rule_applications": {
+    "default_mean": 3.4154390100176784,
+    "custom_mean": 3.2527990571596934,
+    "custom_fewer": 11
+  },
+  "successful_rule_applications": {
+    "default_mean": 4.931644077784325,
+    "custom_mean": 4.835592221567472
+  }
+}

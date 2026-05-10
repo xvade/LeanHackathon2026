@@ -1,0 +1,1857 @@
+[
+  {
+    "jsonl_id": "finelean_382494",
+    "goal": "f : ℝ → ℝ\n    h : ∀ (x y : ℝ), f (x ^ 2) * f y + x ^ 2 * y ≤ x * f (x * y) + x * y * f x\n    ⊢ ∃ c, 1 ≤ c",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_382494",
+    "goal": "case h\n    f : ℝ → ℝ\n    h : ∀ (x y : ℝ), f (x ^ 2) * f y + x ^ 2 * y ≤ x * f (x * y) + x * y * f x\n    ⊢ 1 ≤ ?w",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_366464",
+    "goal": "n : ℕ\n    hn : 0 < n\n    ⊢ ∃ p k, Nat.Prime p → p ^ k = 3 ^ n - 2 ^ n → Nat.Prime n",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_366464",
+    "goal": "case h\n    n : ℕ\n    hn : 0 < n\n    ⊢ ∃ k, Nat.Prime ?w → ?w ^ k = 3 ^ n - 2 ^ n → Nat.Prime n",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_366464",
+    "goal": "case h.h\n    n : ℕ\n    hn : 0 < n\n    a : Nat.Prime ?w\n    a_1 : ?w ^ ?h.w = 3 ^ n - 2 ^ n\n    ⊢ Nat.Prime n",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.assumption",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.assumption"
+  },
+  {
+    "jsonl_id": "finelean_325922",
+    "goal": "α : Type u_1\n    A B C : Set α\n    ⊢ A ∩ (B ∪ C) = A ∩ B ∪ A ∩ C",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.ext"
+  },
+  {
+    "jsonl_id": "finelean_366441",
+    "goal": "case left\n    n m : ℤ\n    a : Even n\n    a_1 : Even m\n    ⊢ Even (n + m)",
+    "allowedUnsafeRules": [
+      "unsafe|apply|global|Even.add",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|forward|global|Even.exists_add_self"
+    ],
+    "chosen": "unsafe|apply|global|Even.add"
+  },
+  {
+    "jsonl_id": "finelean_366441",
+    "goal": "case right\n    n m : ℤ\n    a : Even n\n    a_1 : Even m\n    ⊢ Even (n - m)",
+    "allowedUnsafeRules": [
+      "unsafe|apply|global|Even.sub",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|forward|global|Even.exists_add_self"
+    ],
+    "chosen": "unsafe|apply|global|Even.sub"
+  },
+  {
+    "jsonl_id": "ext_iff'_extracted",
+    "goal": "case mpr\n    α : Type u_1\n    inst : MeasurableSpace α\n    μ₁ μ₂ : MeasureTheory.Measure α\n    a : ∀ (s : Set α), μ₁ s = μ₂ s\n    ⊢ μ₁ = μ₂",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.ext"
+  },
+  {
+    "jsonl_id": "finelean_225089",
+    "goal": "n : ℕ\n    hn : 0 < n\n    x y : Fin n → ℝ\n    ⊢ ∃ A, ∀ (i j : Fin n), A i j = x i * y j",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_225089",
+    "goal": "case h\n    n : ℕ\n    hn : 0 < n\n    x y : Fin n → ℝ\n    i j : Fin n\n    ⊢ ?w i j = x i * y j",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_6522",
+    "goal": "k : ℕ\n    hk : 0 < k\n    left : ¬k = 2\n    left_1 : ¬k = 5\n    right : ¬k = 13\n    ⊢ ∃ x y,\n        x = 2 ∧ y = 5 ∨\n          x = 2 ∧ y = 13 ∨\n            x = 5 ∧ y = 13 ∨ x = k ∧ y = 2 ∨ x = k ∧ y = 5 ∨ (x = k ∧ y = 13) ∧ ∀ (x_1 : ℕ), ¬x_1 ^ 2 = x * y - 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_6522",
+    "goal": "case h\n    k : ℕ\n    hk : 0 < k\n    left : ¬k = 2\n    left_1 : ¬k = 5\n    right : ¬k = 13\n    ⊢ ∃ y,\n        ?w = 2 ∧ y = 5 ∨\n          ?w = 2 ∧ y = 13 ∨\n            ?w = 5 ∧ y = 13 ∨ ?w = k ∧ y = 2 ∨ ?w = k ∧ y = 5 ∨ (?w = k ∧ y = 13) ∧ ∀ (x : ℕ), ¬x ^ 2 = ?w * y - 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_6522",
+    "goal": "case h.h\n    k : ℕ\n    hk : 0 < k\n    left : ¬k = 2\n    left_1 : ¬k = 5\n    right : ¬k = 13\n    ⊢ ?w = 2 ∧ ?h.w = 5 ∨\n        ?w = 2 ∧ ?h.w = 13 ∨\n          ?w = 5 ∧ ?h.w = 13 ∨\n            ?w = k ∧ ?h.w = 2 ∨ ?w = k ∧ ?h.w = 5 ∨ (?w = k ∧ ?h.w = 13) ∧ ∀ (x : ℕ), ¬x ^ 2 = ?w * ?h.w - 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_6522",
+    "goal": "case h.h.h.left\n    k : ℕ\n    hk : 0 < k\n    left : ¬k = 2\n    left_1 : ¬k = 5\n    right : ¬k = 13\n    ⊢ ?w = 2",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_6522",
+    "goal": "case h.h.h.right\n    k : ℕ\n    hk : 0 < k\n    left : ¬k = 2\n    left_1 : ¬k = 5\n    right : ¬k = 13\n    ⊢ ?h.w = 5",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "herald_249924",
+    "goal": "α : Type u_1\n    β : Type u_2\n    ι : Sort u_4\n    inst : Nonempty ι\n    s : ι → Set α\n    t : Set β\n    f : α → β\n    H : ∀ (i : ι), SurjOn f (s i) t\n    Hinj : InjOn f (⋃ i, s i)\n    y : β\n    hy : y ∈ t\n    i : ι\n    ⊢ ∃ x ∈ s i, f x = y",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+  },
+  {
+    "jsonl_id": "finelean_260075",
+    "goal": "a : Fin 10 → ℤ\n    ⊢ ∃ m, (∀ (i : Fin 10), m i = -1 ∨ m i = 0 ∨ m i = 1) ∧ 1001 ∣ ∑ k, m k * a k",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_260075",
+    "goal": "case h.left\n    a : Fin 10 → ℤ\n    i : Fin 10\n    ⊢ ?w i = -1 ∨ ?w i = 0 ∨ ?w i = 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_260075",
+    "goal": "case h.left.h\n    a : Fin 10 → ℤ\n    i : Fin 10\n    ⊢ ?w i = 0 ∨ ?w i = 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_260075",
+    "goal": "case h.left.h.h\n    a : Fin 10 → ℤ\n    i : Fin 10\n    ⊢ ?w i = 0",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|apply|global|RingPreordering.eq_zero_of_mem_of_neg_mem"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "herald_249303",
+    "goal": "n k : ℕ\n    ⊢ ↑k + 1 + 1 = ↑k + 2 ∨ (hermite n).coeff (k + 1 + 1) = 0",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_305019",
+    "goal": "c : ℝ\n    ⊢ ∃ g, ∀ (x : ℝ), g x = 4⁻¹ - 6⁻¹ * x ^ 2 + c / x ^ 4",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_305019",
+    "goal": "case h\n    c x : ℝ\n    ⊢ ?w x = 4⁻¹ - 6⁻¹ * x ^ 2 + c / x ^ 4",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "numina_8a538ad6-0a83-5a3b-9180-db9b32c2e57b",
+    "goal": "case left\n    x y : ℝ\n    hy : ¬y = 0\n    ⊢ ∃ k, x + y = 0 → y = k * x ∨ x * y = k",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_8a538ad6-0a83-5a3b-9180-db9b32c2e57b",
+    "goal": "case left.h\n    x y : ℝ\n    hy : ¬y = 0\n    a : x + y = 0\n    ⊢ y = ?left.w * x ∨ x * y = ?left.w",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "numina_8a538ad6-0a83-5a3b-9180-db9b32c2e57b",
+    "goal": "case left.h.h\n    x y : ℝ\n    hy : ¬y = 0\n    a : x + y = 0\n    ⊢ x * y = ?left.w",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|apply|global|RingPreordering.eq_zero_of_mem_of_neg_mem"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "numina_8a538ad6-0a83-5a3b-9180-db9b32c2e57b",
+    "goal": "case right.left\n    x y : ℝ\n    hy : ¬y = 0\n    ⊢ ∃ k, 3 * x * y = 10 → y = k * x ∨ x * y = k",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_8a538ad6-0a83-5a3b-9180-db9b32c2e57b",
+    "goal": "case right.left.h\n    x y : ℝ\n    hy : ¬y = 0\n    a : 3 * x * y = 10\n    ⊢ y = ?right.left.w * x ∨ x * y = ?right.left.w",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "numina_8a538ad6-0a83-5a3b-9180-db9b32c2e57b",
+    "goal": "case right.left.h.h\n    x y : ℝ\n    hy : ¬y = 0\n    a : 3 * x * y = 10\n    ⊢ x * y = ?right.left.w",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|apply|global|RingPreordering.eq_zero_of_mem_of_neg_mem"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "numina_8a538ad6-0a83-5a3b-9180-db9b32c2e57b",
+    "goal": "case right.right.left\n    x y : ℝ\n    hy : ¬y = 0\n    ⊢ ∃ k, x = 5 * y → y = k * (5 * y) ∨ 5 * y * y = k",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_8a538ad6-0a83-5a3b-9180-db9b32c2e57b",
+    "goal": "case right.right.left.h\n    x y : ℝ\n    hy : ¬y = 0\n    a : x = 5 * y\n    ⊢ y = ?right.right.left.w * (5 * y) ∨ 5 * y * y = ?right.right.left.w",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "numina_8a538ad6-0a83-5a3b-9180-db9b32c2e57b",
+    "goal": "case right.right.left.h.h\n    x y : ℝ\n    hy : ¬y = 0\n    a : x = 5 * y\n    ⊢ 5 * y * y = ?right.right.left.w",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|apply|global|RingPreordering.eq_zero_of_mem_of_neg_mem"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "numina_8a538ad6-0a83-5a3b-9180-db9b32c2e57b",
+    "goal": "case right.right.right\n    x y : ℝ\n    hy : ¬y = 0\n    ⊢ ∃ k, x / y = √3 → y = k * x ∨ x * y = k",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_8a538ad6-0a83-5a3b-9180-db9b32c2e57b",
+    "goal": "case right.right.right.h\n    x y : ℝ\n    hy : ¬y = 0\n    a : x / y = √3\n    ⊢ y = ?right.right.right.w * x ∨ x * y = ?right.right.right.w",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "numina_8a538ad6-0a83-5a3b-9180-db9b32c2e57b",
+    "goal": "case right.right.right.h.h\n    x y : ℝ\n    hy : ¬y = 0\n    a : x / y = √3\n    ⊢ x * y = ?right.right.right.w",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|apply|global|RingPreordering.eq_zero_of_mem_of_neg_mem"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_291749",
+    "goal": "⊢ ∃ m, 1 < m ∧ m ∣ 48 ∧ ∃ p, 1 < p ∧ p ∣ 49 ∧ ∃ q, 1 < q ∧ q ∣ 50",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_291749",
+    "goal": "case h.right.left\n    ⊢ ?w ∣ 48",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_291749",
+    "goal": "case h.right.right\n    ⊢ ∃ p, 1 < p ∧ p ∣ 49 ∧ ∃ q, 1 < q ∧ q ∣ 50",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_291749",
+    "goal": "case h.right.right.h.right.left\n    ⊢ ?h.right.right.w ∣ 49",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_291749",
+    "goal": "case h.right.right.h.right.right\n    ⊢ ∃ q, 1 < q ∧ q ∣ 50",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_291749",
+    "goal": "case h.right.right.h.right.right.h.right\n    ⊢ ?h.right.right.h.right.right.w ∣ 50",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_360755",
+    "goal": "R : Type u_1\n    inst : CommRing R\n    P : Ideal R\n    hP : Prime P\n    ⊢ IsDomain R ∨ ∀ x ∈ P, ¬x = 0 → ∃ y ∈ P, y * x = 0",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_360755",
+    "goal": "case h\n    R : Type u_1\n    inst : CommRing R\n    P : Ideal R\n    hP : Prime P\n    x : R\n    a : x ∈ P\n    a_1 : ¬x = 0\n    ⊢ ∃ y ∈ P, y * x = 0",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_360755",
+    "goal": "case h.h.left\n    R : Type u_1\n    inst : CommRing R\n    P : Ideal R\n    hP : Prime P\n    x : R\n    a : x ∈ P\n    a_1 : ¬x = 0\n    ⊢ ?h.w ∈ P",
+    "allowedUnsafeRules": [
+      "safe|apply|global|ZeroMemClass.zero_mem",
+      "unsafe|apply|global|div_mem",
+      "unsafe|apply|global|nsmul_mem",
+      "unsafe|apply|global|pow_mem",
+      "unsafe|apply|global|sub_mem",
+      "unsafe|apply|global|zpow_mem",
+      "unsafe|apply|global|zsmul_mem",
+      "unsafe|apply|global|AddMemClass.add_mem",
+      "unsafe|apply|global|InvMemClass.inv_mem",
+      "unsafe|apply|global|MulMemClass.mul_mem",
+      "unsafe|apply|global|NegMemClass.neg_mem",
+      "unsafe|apply|global|SMulMemClass.smul_mem",
+      "unsafe|apply|global|StarMemClass.star_mem",
+      "unsafe|apply|global|SubfieldClass.nnqsmul_mem",
+      "unsafe|apply|global|SubfieldClass.qsmul_mem",
+      "unsafe|apply|global|VAddMemClass.vadd_mem",
+      "safe|tactic|global|Aesop.BuiltinRules.assumption",
+      "unsafe|apply|global|mul_neg_mem",
+      "unsafe|apply|global|neg_mul_mem",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|apply|global|HasMemOrInvMem.inv_mem_of_notMem",
+      "unsafe|apply|global|HasMemOrInvMem.mem_of_inv_notMem",
+      "unsafe|apply|global|HasMemOrNegMem.mem_of_neg_notMem",
+      "unsafe|apply|global|HasMemOrNegMem.neg_mem_of_notMem"
+    ],
+    "chosen": "safe|apply|global|ZeroMemClass.zero_mem"
+  },
+  {
+    "jsonl_id": "finelean_39009",
+    "goal": "x : ℕ → ℕ\n    hxn : ∀ (n : ℕ), x (n + 2) = x n * x (n + 1) + 1\n    p : ℕ\n    a_1 : Nat.Prime p\n    ha : 0 < x 0\n    hb : 0 < x 1\n    ⊢ ∃ k, 0 < k → p ∣ x k → ∃ m, k < m ∧ p ∣ x m",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_39009",
+    "goal": "case h\n    x : ℕ → ℕ\n    hxn : ∀ (n : ℕ), x (n + 2) = x n * x (n + 1) + 1\n    p : ℕ\n    a_1 : Nat.Prime p\n    ha : 0 < x 0\n    hb : 0 < x 1\n    a : 0 < ?w\n    a_2 : p ∣ x ?w\n    ⊢ ∃ m, ?w < m ∧ p ∣ x m",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_39009",
+    "goal": "case h.h.left\n    x : ℕ → ℕ\n    hxn : ∀ (n : ℕ), x (n + 2) = x n * x (n + 1) + 1\n    p : ℕ\n    a_1 : Nat.Prime p\n    ha : 0 < x 0\n    hb : 0 < x 1\n    a : 0 < ?w\n    a_2 : p ∣ x ?w\n    ⊢ ?w < ?h.w",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+  },
+  {
+    "jsonl_id": "finelean_367390",
+    "goal": "case left\n    fst snd fst_1 snd_1 : ℝ\n    ⊢ ∃ x, ∀ (t : ℝ), x t = fst + t * (fst_1 - fst)",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_367390",
+    "goal": "case left.h\n    fst snd fst_1 snd_1 t : ℝ\n    ⊢ ?left.w t = fst + t * (fst_1 - fst)",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_367390",
+    "goal": "case right\n    fst snd fst_1 snd_1 : ℝ\n    ⊢ ∃ x, ∀ (t : ℝ), x t = snd + t * (snd_1 - snd)",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_367390",
+    "goal": "case right.h\n    fst snd fst_1 snd_1 t : ℝ\n    ⊢ ?right.w t = snd + t * (snd_1 - snd)",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "numina_c271b8ee-5a0c-5951-865e-9b944a2c4a86",
+    "goal": "a : Fin 10 → ℤ\n    ⊢ ∃ ε, (∀ (i : Fin 10), ε i = 0 ∨ ε i = 1 ∨ ε i = -1) ∧ 1001 ∣ ∑ i, ε i * a i",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_c271b8ee-5a0c-5951-865e-9b944a2c4a86",
+    "goal": "case h.left\n    a : Fin 10 → ℤ\n    i : Fin 10\n    ⊢ ?w i = 0 ∨ ?w i = 1 ∨ ?w i = -1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "numina_c271b8ee-5a0c-5951-865e-9b944a2c4a86",
+    "goal": "case h.left.h\n    a : Fin 10 → ℤ\n    i : Fin 10\n    ⊢ ?w i = 0",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|apply|global|RingPreordering.eq_zero_of_mem_of_neg_mem"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_383866",
+    "goal": "x y : ℕ\n    hx : 0 < x\n    hy : 0 < y\n    hxy : (↑x ^ 2 + ↑y ^ 2) / (↑x - ↑y) ∣ 1995\n    ⊢ ∃ t,\n        x = 3 * t ∧ y = t ∨\n          x = 2 * t ∧ y = t ∨\n            x = t ∧ y = 3 * t ∨\n              (x = t ∧ y = 2 * t) ∧ t = 1 ∨ t = 3 ∨ t = 7 ∨ t = 19 ∨ t = 21 ∨ t = 57 ∨ t = 133 ∨ t = 399",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_383866",
+    "goal": "case h\n    x y : ℕ\n    hx : 0 < x\n    hy : 0 < y\n    hxy : (↑x ^ 2 + ↑y ^ 2) / (↑x - ↑y) ∣ 1995\n    ⊢ x = 3 * ?w ∧ y = ?w ∨\n        x = 2 * ?w ∧ y = ?w ∨\n          x = ?w ∧ y = 3 * ?w ∨\n            (x = ?w ∧ y = 2 * ?w) ∧ ?w = 1 ∨ ?w = 3 ∨ ?w = 7 ∨ ?w = 19 ∨ ?w = 21 ∨ ?w = 57 ∨ ?w = 133 ∨ ?w = 399",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_383866",
+    "goal": "case h.h\n    x y : ℕ\n    hx : 0 < x\n    hy : 0 < y\n    hxy : (↑x ^ 2 + ↑y ^ 2) / (↑x - ↑y) ∣ 1995\n    ⊢ x = 2 * ?w ∧ y = ?w ∨\n        x = ?w ∧ y = 3 * ?w ∨\n          (x = ?w ∧ y = 2 * ?w) ∧ ?w = 1 ∨ ?w = 3 ∨ ?w = 7 ∨ ?w = 19 ∨ ?w = 21 ∨ ?w = 57 ∨ ?w = 133 ∨ ?w = 399",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_383866",
+    "goal": "case h.h.h\n    x y : ℕ\n    hx : 0 < x\n    hy : 0 < y\n    hxy : (↑x ^ 2 + ↑y ^ 2) / (↑x - ↑y) ∣ 1995\n    ⊢ x = ?w ∧ y = 3 * ?w ∨\n        (x = ?w ∧ y = 2 * ?w) ∧ ?w = 1 ∨ ?w = 3 ∨ ?w = 7 ∨ ?w = 19 ∨ ?w = 21 ∨ ?w = 57 ∨ ?w = 133 ∨ ?w = 399",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_383866",
+    "goal": "case h.h.h.h\n    x y : ℕ\n    hx : 0 < x\n    hy : 0 < y\n    hxy : (↑x ^ 2 + ↑y ^ 2) / (↑x - ↑y) ∣ 1995\n    ⊢ (x = ?w ∧ y = 2 * ?w) ∧ ?w = 1 ∨ ?w = 3 ∨ ?w = 7 ∨ ?w = 19 ∨ ?w = 21 ∨ ?w = 57 ∨ ?w = 133 ∨ ?w = 399",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_383866",
+    "goal": "case h.h.h.h.h\n    x y : ℕ\n    hx : 0 < x\n    hy : 0 < y\n    hxy : (↑x ^ 2 + ↑y ^ 2) / (↑x - ↑y) ∣ 1995\n    ⊢ ?w = 3 ∨ ?w = 7 ∨ ?w = 19 ∨ ?w = 21 ∨ ?w = 57 ∨ ?w = 133 ∨ ?w = 399",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_383866",
+    "goal": "case h.h.h.h.h.h\n    x y : ℕ\n    hx : 0 < x\n    hy : 0 < y\n    hxy : (↑x ^ 2 + ↑y ^ 2) / (↑x - ↑y) ∣ 1995\n    ⊢ ?w = 3",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_212933",
+    "goal": "case inl\n    G : Type u_1\n    inst : Group G\n    K : Subgroup G\n    x : G\n    ⊢ ∃ y, ∃ z ∈ K, x = y * z",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_212933",
+    "goal": "case inl.h\n    G : Type u_1\n    inst : Group G\n    K : Subgroup G\n    x : G\n    ⊢ ∃ z ∈ K, x = ?inl.w * z",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_212933",
+    "goal": "case inl.h.h.left\n    G : Type u_1\n    inst : Group G\n    K : Subgroup G\n    x : G\n    ⊢ ?inl.h.w ∈ K",
+    "allowedUnsafeRules": [
+      "safe|apply|global|OneMemClass.one_mem",
+      "unsafe|apply|global|div_mem",
+      "unsafe|apply|global|nsmul_mem",
+      "unsafe|apply|global|pow_mem",
+      "unsafe|apply|global|sub_mem",
+      "unsafe|apply|global|zpow_mem",
+      "unsafe|apply|global|zsmul_mem",
+      "unsafe|apply|global|AddMemClass.add_mem",
+      "unsafe|apply|global|InvMemClass.inv_mem",
+      "unsafe|apply|global|MulMemClass.mul_mem",
+      "unsafe|apply|global|NegMemClass.neg_mem",
+      "unsafe|apply|global|SMulMemClass.smul_mem",
+      "unsafe|apply|global|StarMemClass.star_mem",
+      "unsafe|apply|global|SubfieldClass.nnqsmul_mem",
+      "unsafe|apply|global|SubfieldClass.qsmul_mem",
+      "unsafe|apply|global|VAddMemClass.vadd_mem",
+      "unsafe|apply|global|mul_neg_mem",
+      "unsafe|apply|global|neg_mul_mem",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|apply|global|HasMemOrInvMem.inv_mem_of_notMem",
+      "unsafe|apply|global|HasMemOrInvMem.mem_of_inv_notMem",
+      "unsafe|apply|global|HasMemOrNegMem.mem_of_neg_notMem",
+      "unsafe|apply|global|HasMemOrNegMem.neg_mem_of_notMem"
+    ],
+    "chosen": "safe|apply|global|OneMemClass.one_mem"
+  },
+  {
+    "jsonl_id": "finelean_212933",
+    "goal": "case inl.h.h.right\n    G : Type u_1\n    inst : Group G\n    K : Subgroup G\n    x : G\n    ⊢ x = ?inl.w",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|apply|global|RingPreordering.eq_zero_of_mem_of_neg_mem"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_212933",
+    "goal": "case inr\n    G : Type u_1\n    inst : Group G\n    H : Subgroup G\n    x : G\n    ⊢ ∃ y ∈ H, ∃ z, x = y * z",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_212933",
+    "goal": "case inr.h.left\n    G : Type u_1\n    inst : Group G\n    H : Subgroup G\n    x : G\n    ⊢ ?inr.w ∈ H",
+    "allowedUnsafeRules": [
+      "safe|apply|global|OneMemClass.one_mem",
+      "unsafe|apply|global|div_mem",
+      "unsafe|apply|global|nsmul_mem",
+      "unsafe|apply|global|pow_mem",
+      "unsafe|apply|global|sub_mem",
+      "unsafe|apply|global|zpow_mem",
+      "unsafe|apply|global|zsmul_mem",
+      "unsafe|apply|global|AddMemClass.add_mem",
+      "unsafe|apply|global|InvMemClass.inv_mem",
+      "unsafe|apply|global|MulMemClass.mul_mem",
+      "unsafe|apply|global|NegMemClass.neg_mem",
+      "unsafe|apply|global|SMulMemClass.smul_mem",
+      "unsafe|apply|global|StarMemClass.star_mem",
+      "unsafe|apply|global|SubfieldClass.nnqsmul_mem",
+      "unsafe|apply|global|SubfieldClass.qsmul_mem",
+      "unsafe|apply|global|VAddMemClass.vadd_mem",
+      "unsafe|apply|global|mul_neg_mem",
+      "unsafe|apply|global|neg_mul_mem",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|apply|global|HasMemOrInvMem.inv_mem_of_notMem",
+      "unsafe|apply|global|HasMemOrInvMem.mem_of_inv_notMem",
+      "unsafe|apply|global|HasMemOrNegMem.mem_of_neg_notMem",
+      "unsafe|apply|global|HasMemOrNegMem.neg_mem_of_notMem"
+    ],
+    "chosen": "safe|apply|global|OneMemClass.one_mem"
+  },
+  {
+    "jsonl_id": "numina_81382334-db3b-5fea-96b1-812ec33fd507",
+    "goal": "n m : ℕ\n    hn : 0 < n\n    hm : 0 < m\n    x : Fin n → ℕ\n    y : Fin m → ℕ\n    hsum : ∑ i, x i = ∑ j, y j\n    hmn' : ∑ j, y j < m * n\n    ⊢ ∃ s t, ∑ i ∈ s, x i = ∑ j ∈ t, y j",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_81382334-db3b-5fea-96b1-812ec33fd507",
+    "goal": "case h\n    n m : ℕ\n    hn : 0 < n\n    hm : 0 < m\n    x : Fin n → ℕ\n    y : Fin m → ℕ\n    hsum : ∑ i, x i = ∑ j, y j\n    hmn' : ∑ j, y j < m * n\n    ⊢ ∃ t, ∑ i ∈ ?w, x i = ∑ j ∈ t, y j",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_81382334-db3b-5fea-96b1-812ec33fd507",
+    "goal": "case h.h\n    n m : ℕ\n    hn : 0 < n\n    hm : 0 < m\n    x : Fin n → ℕ\n    y : Fin m → ℕ\n    hsum : ∑ i, x i = ∑ j, y j\n    hmn' : ∑ j, y j < m * n\n    ⊢ ∑ i ∈ ?w, x i = ∑ j ∈ ?h.w, y j",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.assumption",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.assumption"
+  },
+  {
+    "jsonl_id": "finelean_387015",
+    "goal": "⊢ {2, 1, 9, 0, 7, 8, 6, 3, 5} = {0, 1, 2, 3, 5, 6, 7, 8, 9} \\ {4}",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.ext"
+  },
+  {
+    "jsonl_id": "numina_58226e7a-9153-5d34-a8e2-d993fbe4ab89",
+    "goal": "p q r s : ℝ\n    h₀ : p + q + r + s = 9\n    h₁ : p ^ 2 + q ^ 2 + r ^ 2 + s ^ 2 = 21\n    ⊢ ∃ a b c d,\n        a = p ∧ b = q ∧ c = r ∧ d = s ∨\n          a = p ∧ b = q ∧ c = s ∧ d = r ∨\n            a = p ∧ b = r ∧ c = q ∧ d = s ∨\n              a = p ∧ b = r ∧ c = s ∧ d = q ∨\n                a = p ∧ b = s ∧ c = q ∧ d = r ∨\n                  a = p ∧ b = s ∧ c = r ∧ d = q ∨\n                    a = q ∧ b = p ∧ c = r ∧ d = s ∨\n                      a = q ∧ b = p ∧ c = s ∧ d = r ∨\n                        a = q ∧ b = r ∧ c = p ∧ d = s ∨\n                          a = q ∧ b = r ∧ c = s ∧ d = p ∨\n                            a = q ∧ b = s ∧ c = p ∧ d = r ∨\n                              a = q ∧ b = s ∧ c = r ∧ d = p ∨\n                                a = r ∧ b = p ∧ c = q ∧ d = s ∨\n                                  a = r ∧ b = p ∧ c = s ∧ d = q ∨\n                                    a = r ∧ b = q ∧ c = p ∧ d = s ∨\n                                      a = r ∧ b = q ∧ c = s ∧ d = p ∨\n                                        a = r ∧ b = s ∧ c = p ∧ d = q ∨\n                                          a = r ∧ b = s ∧ c = q ∧ d = p ∨\n                                            a = s ∧ b = p ∧ c = q ∧ d = r ∨\n                                              a = s ∧ b = p ∧ c = r ∧ d = q ∨\n                                                a = s ∧ b = q ∧ c = p ∧ d = r ∨\n                                                  (a = s ∧ b = q ∧ c = r ∧ d = p) ∧ 2 ≤ a * b - c * d",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_58226e7a-9153-5d34-a8e2-d993fbe4ab89",
+    "goal": "case h\n    p q r s : ℝ\n    h₀ : p + q + r + s = 9\n    h₁ : p ^ 2 + q ^ 2 + r ^ 2 + s ^ 2 = 21\n    ⊢ ∃ b c d,\n        ?w = p ∧ b = q ∧ c = r ∧ d = s ∨\n          ?w = p ∧ b = q ∧ c = s ∧ d = r ∨\n            ?w = p ∧ b = r ∧ c = q ∧ d = s ∨\n              ?w = p ∧ b = r ∧ c = s ∧ d = q ∨\n                ?w = p ∧ b = s ∧ c = q ∧ d = r ∨\n                  ?w = p ∧ b = s ∧ c = r ∧ d = q ∨\n                    ?w = q ∧ b = p ∧ c = r ∧ d = s ∨\n                      ?w = q ∧ b = p ∧ c = s ∧ d = r ∨\n                        ?w = q ∧ b = r ∧ c = p ∧ d = s ∨\n                          ?w = q ∧ b = r ∧ c = s ∧ d = p ∨\n                            ?w = q ∧ b = s ∧ c = p ∧ d = r ∨\n                              ?w = q ∧ b = s ∧ c = r ∧ d = p ∨\n                                ?w = r ∧ b = p ∧ c = q ∧ d = s ∨\n                                  ?w = r ∧ b = p ∧ c = s ∧ d = q ∨\n                                    ?w = r ∧ b = q ∧ c = p ∧ d = s ∨\n                                      ?w = r ∧ b = q ∧ c = s ∧ d = p ∨\n                                        ?w = r ∧ b = s ∧ c = p ∧ d = q ∨\n                                          ?w = r ∧ b = s ∧ c = q ∧ d = p ∨\n                                            ?w = s ∧ b = p ∧ c = q ∧ d = r ∨\n                                              ?w = s ∧ b = p ∧ c = r ∧ d = q ∨\n                                                ?w = s ∧ b = q ∧ c = p ∧ d = r ∨\n                                                  (?w = s ∧ b = q ∧ c = r ∧ d = p) ∧ 2 ≤ ?w * b - c * d",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_58226e7a-9153-5d34-a8e2-d993fbe4ab89",
+    "goal": "case h.h\n    p q r s : ℝ\n    h₀ : p + q + r + s = 9\n    h₁ : p ^ 2 + q ^ 2 + r ^ 2 + s ^ 2 = 21\n    ⊢ ∃ c d,\n        ?w = p ∧ ?h.w = q ∧ c = r ∧ d = s ∨\n          ?w = p ∧ ?h.w = q ∧ c = s ∧ d = r ∨\n            ?w = p ∧ ?h.w = r ∧ c = q ∧ d = s ∨\n              ?w = p ∧ ?h.w = r ∧ c = s ∧ d = q ∨\n                ?w = p ∧ ?h.w = s ∧ c = q ∧ d = r ∨\n                  ?w = p ∧ ?h.w = s ∧ c = r ∧ d = q ∨\n                    ?w = q ∧ ?h.w = p ∧ c = r ∧ d = s ∨\n                      ?w = q ∧ ?h.w = p ∧ c = s ∧ d = r ∨\n                        ?w = q ∧ ?h.w = r ∧ c = p ∧ d = s ∨\n                          ?w = q ∧ ?h.w = r ∧ c = s ∧ d = p ∨\n                            ?w = q ∧ ?h.w = s ∧ c = p ∧ d = r ∨\n                              ?w = q ∧ ?h.w = s ∧ c = r ∧ d = p ∨\n                                ?w = r ∧ ?h.w = p ∧ c = q ∧ d = s ∨\n                                  ?w = r ∧ ?h.w = p ∧ c = s ∧ d = q ∨\n                                    ?w = r ∧ ?h.w = q ∧ c = p ∧ d = s ∨\n                                      ?w = r ∧ ?h.w = q ∧ c = s ∧ d = p ∨\n                                        ?w = r ∧ ?h.w = s ∧ c = p ∧ d = q ∨\n                                          ?w = r ∧ ?h.w = s ∧ c = q ∧ d = p ∨\n                                            ?w = s ∧ ?h.w = p ∧ c = q ∧ d = r ∨\n                                              ?w = s ∧ ?h.w = p ∧ c = r ∧ d = q ∨\n                                                ?w = s ∧ ?h.w = q ∧ c = p ∧ d = r ∨\n                                                  (?w = s ∧ ?h.w = q ∧ c = r ∧ d = p) ∧ 2 ≤ ?w * ?h.w - c * d",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_58226e7a-9153-5d34-a8e2-d993fbe4ab89",
+    "goal": "case h.h.h\n    p q r s : ℝ\n    h₀ : p + q + r + s = 9\n    h₁ : p ^ 2 + q ^ 2 + r ^ 2 + s ^ 2 = 21\n    ⊢ ∃ d,\n        ?w = p ∧ ?h.w = q ∧ ?h.h.w = r ∧ d = s ∨\n          ?w = p ∧ ?h.w = q ∧ ?h.h.w = s ∧ d = r ∨\n            ?w = p ∧ ?h.w = r ∧ ?h.h.w = q ∧ d = s ∨\n              ?w = p ∧ ?h.w = r ∧ ?h.h.w = s ∧ d = q ∨\n                ?w = p ∧ ?h.w = s ∧ ?h.h.w = q ∧ d = r ∨\n                  ?w = p ∧ ?h.w = s ∧ ?h.h.w = r ∧ d = q ∨\n                    ?w = q ∧ ?h.w = p ∧ ?h.h.w = r ∧ d = s ∨\n                      ?w = q ∧ ?h.w = p ∧ ?h.h.w = s ∧ d = r ∨\n                        ?w = q ∧ ?h.w = r ∧ ?h.h.w = p ∧ d = s ∨\n                          ?w = q ∧ ?h.w = r ∧ ?h.h.w = s ∧ d = p ∨\n                            ?w = q ∧ ?h.w = s ∧ ?h.h.w = p ∧ d = r ∨\n                              ?w = q ∧ ?h.w = s ∧ ?h.h.w = r ∧ d = p ∨\n                                ?w = r ∧ ?h.w = p ∧ ?h.h.w = q ∧ d = s ∨\n                                  ?w = r ∧ ?h.w = p ∧ ?h.h.w = s ∧ d = q ∨\n                                    ?w = r ∧ ?h.w = q ∧ ?h.h.w = p ∧ d = s ∨\n                                      ?w = r ∧ ?h.w = q ∧ ?h.h.w = s ∧ d = p ∨\n                                        ?w = r ∧ ?h.w = s ∧ ?h.h.w = p ∧ d = q ∨\n                                          ?w = r ∧ ?h.w = s ∧ ?h.h.w = q ∧ d = p ∨\n                                            ?w = s ∧ ?h.w = p ∧ ?h.h.w = q ∧ d = r ∨\n                                              ?w = s ∧ ?h.w = p ∧ ?h.h.w = r ∧ d = q ∨\n                                                ?w = s ∧ ?h.w = q ∧ ?h.h.w = p ∧ d = r ∨\n                                                  (?w = s ∧ ?h.w = q ∧ ?h.h.w = r ∧ d = p) ∧ 2 ≤ ?w * ?h.w - ?h.h.w * d",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_58226e7a-9153-5d34-a8e2-d993fbe4ab89",
+    "goal": "case h.h.h.h\n    p q r s : ℝ\n    h₀ : p + q + r + s = 9\n    h₁ : p ^ 2 + q ^ 2 + r ^ 2 + s ^ 2 = 21\n    ⊢ ?w = p ∧ ?h.w = q ∧ ?h.h.w = r ∧ ?h.h.h.w = s ∨\n        ?w = p ∧ ?h.w = q ∧ ?h.h.w = s ∧ ?h.h.h.w = r ∨\n          ?w = p ∧ ?h.w = r ∧ ?h.h.w = q ∧ ?h.h.h.w = s ∨\n            ?w = p ∧ ?h.w = r ∧ ?h.h.w = s ∧ ?h.h.h.w = q ∨\n              ?w = p ∧ ?h.w = s ∧ ?h.h.w = q ∧ ?h.h.h.w = r ∨\n                ?w = p ∧ ?h.w = s ∧ ?h.h.w = r ∧ ?h.h.h.w = q ∨\n                  ?w = q ∧ ?h.w = p ∧ ?h.h.w = r ∧ ?h.h.h.w = s ∨\n                    ?w = q ∧ ?h.w = p ∧ ?h.h.w = s ∧ ?h.h.h.w = r ∨\n                      ?w = q ∧ ?h.w = r ∧ ?h.h.w = p ∧ ?h.h.h.w = s ∨\n                        ?w = q ∧ ?h.w = r ∧ ?h.h.w = s ∧ ?h.h.h.w = p ∨\n                          ?w = q ∧ ?h.w = s ∧ ?h.h.w = p ∧ ?h.h.h.w = r ∨\n                            ?w = q ∧ ?h.w = s ∧ ?h.h.w = r ∧ ?h.h.h.w = p ∨\n                              ?w = r ∧ ?h.w = p ∧ ?h.h.w = q ∧ ?h.h.h.w = s ∨\n                                ?w = r ∧ ?h.w = p ∧ ?h.h.w = s ∧ ?h.h.h.w = q ∨\n                                  ?w = r ∧ ?h.w = q ∧ ?h.h.w = p ∧ ?h.h.h.w = s ∨\n                                    ?w = r ∧ ?h.w = q ∧ ?h.h.w = s ∧ ?h.h.h.w = p ∨\n                                      ?w = r ∧ ?h.w = s ∧ ?h.h.w = p ∧ ?h.h.h.w = q ∨\n                                        ?w = r ∧ ?h.w = s ∧ ?h.h.w = q ∧ ?h.h.h.w = p ∨\n                                          ?w = s ∧ ?h.w = p ∧ ?h.h.w = q ∧ ?h.h.h.w = r ∨\n                                            ?w = s ∧ ?h.w = p ∧ ?h.h.w = r ∧ ?h.h.h.w = q ∨\n                                              ?w = s ∧ ?h.w = q ∧ ?h.h.w = p ∧ ?h.h.h.w = r ∨\n                                                (?w = s ∧ ?h.w = q ∧ ?h.h.w = r ∧ ?h.h.h.w = p) ∧\n                                                  2 ≤ ?w * ?h.w - ?h.h.w * ?h.h.h.w",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "numina_58226e7a-9153-5d34-a8e2-d993fbe4ab89",
+    "goal": "case h.h.h.h.h.left\n    p q r s : ℝ\n    h₀ : p + q + r + s = 9\n    h₁ : p ^ 2 + q ^ 2 + r ^ 2 + s ^ 2 = 21\n    ⊢ ?w = p",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "numina_58226e7a-9153-5d34-a8e2-d993fbe4ab89",
+    "goal": "case h.h.h.h.h.right.left\n    p q r s : ℝ\n    h₀ : p + q + r + s = 9\n    h₁ : p ^ 2 + q ^ 2 + r ^ 2 + s ^ 2 = 21\n    ⊢ ?h.w = q",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "numina_58226e7a-9153-5d34-a8e2-d993fbe4ab89",
+    "goal": "case h.h.h.h.h.right.right.left\n    p q r s : ℝ\n    h₀ : p + q + r + s = 9\n    h₁ : p ^ 2 + q ^ 2 + r ^ 2 + s ^ 2 = 21\n    ⊢ ?h.h.w = r",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "numina_58226e7a-9153-5d34-a8e2-d993fbe4ab89",
+    "goal": "case h.h.h.h.h.right.right.right\n    p q r s : ℝ\n    h₀ : p + q + r + s = 9\n    h₁ : p ^ 2 + q ^ 2 + r ^ 2 + s ^ 2 = 21\n    ⊢ ?h.h.h.w = s",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "herald_249276",
+    "goal": "case left\n    X : Type u_1\n    Y : Type u_2\n    inst : TopologicalSpace X\n    inst_1 : TopologicalSpace Y\n    s : Set X\n    t : Set Y\n    hs : Dense s\n    ht : Dense t\n    fst : X\n    snd : Y\n    ⊢ fst ∈ closure s",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|apply|global|HasMemOrInvMem.mem_of_inv_notMem",
+      "unsafe|apply|global|HasMemOrNegMem.mem_of_neg_notMem"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+  },
+  {
+    "jsonl_id": "herald_249276",
+    "goal": "case right\n    X : Type u_1\n    Y : Type u_2\n    inst : TopologicalSpace X\n    inst_1 : TopologicalSpace Y\n    s : Set X\n    t : Set Y\n    hs : Dense s\n    ht : Dense t\n    fst : X\n    snd : Y\n    ⊢ snd ∈ closure t",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|apply|global|HasMemOrInvMem.mem_of_inv_notMem",
+      "unsafe|apply|global|HasMemOrNegMem.mem_of_neg_notMem"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+  },
+  {
+    "jsonl_id": "outerMeasure_exists_compact_extracted",
+    "goal": "G : Type u_1\n    inst : TopologicalSpace G\n    μ : Content G\n    inst_1 : R1Space G\n    U : Opens G\n    ε : ℝ≥0\n    a : ¬μ.outerMeasure ↑U = ∞\n    a_1 : ¬ε = 0\n    ⊢ ∃ K ⊆ ↑U, μ.outerMeasure ↑U ≤ μ.outerMeasure K + ↑ε",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "outerMeasure_exists_compact_extracted",
+    "goal": "case h.left\n    G : Type u_1\n    inst : TopologicalSpace G\n    μ : Content G\n    inst_1 : R1Space G\n    U : Opens G\n    ε : ℝ≥0\n    a : ¬μ.outerMeasure ↑U = ∞\n    a_1 : ¬ε = 0\n    ⊢ ?w ⊆ ↑U",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "extract_aug_490688",
+    "goal": "a : ℕ → ℕ\n    a1 : a 0 = 3\n    a_rec : ∀ (n : ℕ), a (n + 1) = a n + 5 + 4 * 2 ^ n + 3 ^ (n + 1) + 2 * 4 ^ n + 5 ^ n\n    ⊢ ∃ f, ∀ (n : ℕ), a n = f n",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "extract_aug_490688",
+    "goal": "case h\n    a : ℕ → ℕ\n    a1 : a 0 = 3\n    a_rec : ∀ (n : ℕ), a (n + 1) = a n + 5 + 4 * 2 ^ n + 3 ^ (n + 1) + 2 * 4 ^ n + 5 ^ n\n    n : ℕ\n    ⊢ a n = ?w n",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|apply|global|RingPreordering.eq_zero_of_mem_of_neg_mem"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_252489",
+    "goal": "n : ℕ\n    ⊢ Set.Ioo n (n + 1) ∩ Set.Ici 1 = ∅",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.ext"
+  },
+  {
+    "jsonl_id": "finelean_173611",
+    "goal": "p : ℕ\n    hp : Nat.Prime p\n    h : p ≡ 3 [MOD 4]\n    n : ℤ\n    ⊢ ∃ k, 2 + 2 * √(4 * ↑p * ↑n ^ 2 + 1) = ↑k → 0 ≤ k",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_173611",
+    "goal": "case h\n    p : ℕ\n    hp : Nat.Prime p\n    h : p ≡ 3 [MOD 4]\n    n : ℤ\n    a : 2 + 2 * √(4 * ↑p * ↑n ^ 2 + 1) = ↑?w\n    ⊢ 0 ≤ ?w",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_214572",
+    "goal": "⊢ ∃ x n, 0 < x ∧ 0 < n ∧ 3 * 2 ^ x + 4 = n ^ 2 ∧ x = 2 ∧ n = 4 ∨ x = 5 ∧ n = 10 ∨ x = 6 ∧ n = 14",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_214572",
+    "goal": "case h\n    ⊢ ∃ n, 0 < ?w ∧ 0 < n ∧ 3 * 2 ^ ?w + 4 = n ^ 2 ∧ ?w = 2 ∧ n = 4 ∨ ?w = 5 ∧ n = 10 ∨ ?w = 6 ∧ n = 14",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_214572",
+    "goal": "case h.h\n    ⊢ 0 < ?w ∧ 0 < ?h.w ∧ 3 * 2 ^ ?w + 4 = ?h.w ^ 2 ∧ ?w = 2 ∧ ?h.w = 4 ∨ ?w = 5 ∧ ?h.w = 10 ∨ ?w = 6 ∧ ?h.w = 14",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_214572",
+    "goal": "case h.h.h\n    ⊢ ?w = 5 ∧ ?h.w = 10 ∨ ?w = 6 ∧ ?h.w = 14",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_214572",
+    "goal": "case h.h.h.h.left\n    ⊢ ?w = 5",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_214572",
+    "goal": "case h.h.h.h.right\n    ⊢ ?h.w = 10",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_198901",
+    "goal": "case mp\n    R : Type u_1\n    inst : Ring R\n    a : ∀ (x y z : R), x * (y + z) = x * y + x * z\n    x : R\n    ⊢ ∃ f, (∀ (y : R), f y = x * y) ∧ ∀ (x' y' : R), f (x' + y') = f x' + f y'",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_198901",
+    "goal": "case mp.h.left\n    R : Type u_1\n    inst : Ring R\n    a : ∀ (x y z : R), x * (y + z) = x * y + x * z\n    x y : R\n    ⊢ ?mp.w y = x * y",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "extract_aug_492121",
+    "goal": "⊢ ∃ p, p ∣ 99999999999 ∧ ¬p ∣ 9",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "extract_aug_492121",
+    "goal": "case h.left\n    ⊢ ?w ∣ 99999999999",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_133545",
+    "goal": "X : Type u_1\n    h : X → X\n    h_injective : Function.Injective h\n    E : Set X\n    ⊢ h '' (E \\ h '' E) = h '' E \\ h '' (h '' E)",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.ext"
+  },
+  {
+    "jsonl_id": "finelean_133545",
+    "goal": "case h.mp.left\n    X : Type u_1\n    h : X → X\n    h_injective : Function.Injective h\n    E : Set X\n    w : X\n    left : w ∈ E\n    right_1 : ∀ x ∈ E, ¬h x = w\n    ⊢ ∃ x ∈ E, h x = h w",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_133545",
+    "goal": "case h.mp.left.h.right\n    X : Type u_1\n    h : X → X\n    h_injective : Function.Injective h\n    E : Set X\n    w : X\n    left : w ∈ E\n    right_1 : ∀ x ∈ E, ¬h x = w\n    ⊢ h ?h.mp.left.w = h w",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_133545",
+    "goal": "case h.mp.right.h\n    X : Type u_1\n    h : X → X\n    h_injective : Function.Injective h\n    E : Set X\n    w : X\n    left : w ∈ E\n    right_1 : ∀ x ∈ E, ¬h x = w\n    x : X\n    a : x ∈ E\n    a_1 : h (h x) = h w\n    ⊢ False",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+  },
+  {
+    "jsonl_id": "finelean_133545",
+    "goal": "case h.mp.right.h.a\n    X : Type u_1\n    h : X → X\n    h_injective : Function.Injective h\n    E : Set X\n    w : X\n    left : w ∈ E\n    right_1 : ∀ x ∈ E, ¬h x = w\n    x : X\n    a : x ∈ E\n    a_1 : h (h x) = h w\n    ⊢ h ?h.mp.right.h.x = w",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+  },
+  {
+    "jsonl_id": "finelean_133545",
+    "goal": "case h.mp.right.h.a.a\n    X : Type u_1\n    h : X → X\n    h_injective : Function.Injective h\n    E : Set X\n    w : X\n    left : w ∈ E\n    right_1 : ∀ x ∈ E, ¬h x = w\n    x : X\n    a : x ∈ E\n    a_1 : h (h x) = h w\n    ⊢ h (h ?h.mp.right.h.x) = h w",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.assumption",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.assumption"
+  },
+  {
+    "jsonl_id": "finelean_133545",
+    "goal": "case h.mpr\n    X : Type u_1\n    h : X → X\n    h_injective : Function.Injective h\n    E : Set X\n    w : X\n    left : w ∈ E\n    right : ∀ x ∈ E, ¬h (h x) = h w\n    ⊢ ∃ x, (x ∈ E ∧ ∀ x_1 ∈ E, ¬h x_1 = x) ∧ h x = h w",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_133545",
+    "goal": "case h.mpr.h.right\n    X : Type u_1\n    h : X → X\n    h_injective : Function.Injective h\n    E : Set X\n    w : X\n    left : w ∈ E\n    right : ∀ x ∈ E, ¬h (h x) = h w\n    ⊢ h ?h.mpr.w = h w",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_133545",
+    "goal": "case h.mpr.h.left.h\n    X : Type u_1\n    h : X → X\n    h_injective : Function.Injective h\n    E : Set X\n    x : X\n    a : x ∈ E\n    left : h x ∈ E\n    right : ∀ x_1 ∈ E, ¬h (h x_1) = h (h x)\n    ⊢ False",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+  },
+  {
+    "jsonl_id": "finelean_133545",
+    "goal": "case h.mpr.h.left.h.a\n    X : Type u_1\n    h : X → X\n    h_injective : Function.Injective h\n    E : Set X\n    x : X\n    a : x ∈ E\n    left : h x ∈ E\n    right : ∀ x_1 ∈ E, ¬h (h x_1) = h (h x)\n    ⊢ h (h ?h.mpr.h.left.h.x) = h (h x)",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_41201",
+    "goal": "⊢ ∃ f, ∀ (x : ℕ), f x = 2 ^ x",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_41201",
+    "goal": "case h\n    x : ℕ\n    ⊢ ?w x = 2 ^ x",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_99178",
+    "goal": "⊢ ∃ g, ∀ (n : ℕ), g n = ↑n * 2 ^ (n - 1)",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_99178",
+    "goal": "case h\n    n : ℕ\n    ⊢ ?w n = ↑n * 2 ^ (n - 1)",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "numina_a92e9ca4-8ecf-5061-9393-c0389f8ca142",
+    "goal": "⊢ ∃ a, {n | 0 < n ∧ 24 ∣ n ∧ (n = 308700 ∨ n = 220500 ∨ n = 132300 ∨ n = 88200)} = {a}",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_a92e9ca4-8ecf-5061-9393-c0389f8ca142",
+    "goal": "case h\n    ⊢ {n | 0 < n ∧ 24 ∣ n ∧ (n = 308700 ∨ n = 220500 ∨ n = 132300 ∨ n = 88200)} = {?w}",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.ext"
+  },
+  {
+    "jsonl_id": "numina_a92e9ca4-8ecf-5061-9393-c0389f8ca142",
+    "goal": "case h.h.mpr.right.right\n    ⊢ ?w = 308700 ∨ ?w = 220500 ∨ ?w = 132300 ∨ ?w = 88200",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "numina_a92e9ca4-8ecf-5061-9393-c0389f8ca142",
+    "goal": "case h.h.mpr.right.right.h\n    ⊢ ?w = 220500 ∨ ?w = 132300 ∨ ?w = 88200",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "numina_a92e9ca4-8ecf-5061-9393-c0389f8ca142",
+    "goal": "case h.h.mpr.right.right.h.h\n    ⊢ ?w = 132300 ∨ ?w = 88200",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "numina_a92e9ca4-8ecf-5061-9393-c0389f8ca142",
+    "goal": "case h.h.mpr.right.right.h.h.h\n    ⊢ ?w = 88200",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "numina_d08d9f34-4551-57fc-9ffc-d030e22bf17a",
+    "goal": "d : ℕ\n    hd : 0 < d\n    hne2 : ¬d = 2\n    hne5 : ¬d = 5\n    hne13 : ¬d = 13\n    ⊢ ∃ a b,\n        a = 2 ∧ b = 5 ∨\n          a = 2 ∧ b = 13 ∨\n            a = 5 ∧ b = 13 ∨ a = d ∧ b = 2 ∨ a = d ∧ b = 5 ∨ (a = d ∧ b = 13) ∧ ∀ (x : ℕ), ¬x ^ 2 = a * b - 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_d08d9f34-4551-57fc-9ffc-d030e22bf17a",
+    "goal": "case h\n    d : ℕ\n    hd : 0 < d\n    hne2 : ¬d = 2\n    hne5 : ¬d = 5\n    hne13 : ¬d = 13\n    ⊢ ∃ b,\n        ?w = 2 ∧ b = 5 ∨\n          ?w = 2 ∧ b = 13 ∨\n            ?w = 5 ∧ b = 13 ∨ ?w = d ∧ b = 2 ∨ ?w = d ∧ b = 5 ∨ (?w = d ∧ b = 13) ∧ ∀ (x : ℕ), ¬x ^ 2 = ?w * b - 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_d08d9f34-4551-57fc-9ffc-d030e22bf17a",
+    "goal": "case h.h\n    d : ℕ\n    hd : 0 < d\n    hne2 : ¬d = 2\n    hne5 : ¬d = 5\n    hne13 : ¬d = 13\n    ⊢ ?w = 2 ∧ ?h.w = 5 ∨\n        ?w = 2 ∧ ?h.w = 13 ∨\n          ?w = 5 ∧ ?h.w = 13 ∨\n            ?w = d ∧ ?h.w = 2 ∨ ?w = d ∧ ?h.w = 5 ∨ (?w = d ∧ ?h.w = 13) ∧ ∀ (x : ℕ), ¬x ^ 2 = ?w * ?h.w - 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "numina_d08d9f34-4551-57fc-9ffc-d030e22bf17a",
+    "goal": "case h.h.h.left\n    d : ℕ\n    hd : 0 < d\n    hne2 : ¬d = 2\n    hne5 : ¬d = 5\n    hne13 : ¬d = 13\n    ⊢ ?w = 2",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "numina_d08d9f34-4551-57fc-9ffc-d030e22bf17a",
+    "goal": "case h.h.h.right\n    d : ℕ\n    hd : 0 < d\n    hne2 : ¬d = 2\n    hne5 : ¬d = 5\n    hne13 : ¬d = 13\n    ⊢ ?h.w = 5",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_352228",
+    "goal": "x y : ℤ\n    ⊢ (↑(Nat.choose 9 7) * 25 = 900 ∨ x = 0) ∨ y = 0",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_352228",
+    "goal": "case h\n    x y : ℤ\n    ⊢ ↑(Nat.choose 9 7) * 25 = 900 ∨ x = 0",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "linearMap_comp_extracted",
+    "goal": "R : Type u_1\n    ι : Type u_2\n    inst : Semiring R\n    β : ι → Type u_6\n    β₁ : ι → Type u_7\n    β₂ : ι → Type u_8\n    inst_1 : (i : ι) → AddCommMonoid (β i)\n    inst_2 : (i : ι) → AddCommMonoid (β₁ i)\n    inst_3 : (i : ι) → AddCommMonoid (β₂ i)\n    inst_4 : (i : ι) → Module R (β i)\n    inst_5 : (i : ι) → Module R (β₁ i)\n    inst_6 : (i : ι) → Module R (β₂ i)\n    f : (i : ι) → β₁ i →ₗ[R] β₂ i\n    f₂ : (i : ι) → β i →ₗ[R] β₁ i\n    ⊢ (DFinsupp.mapRange.linearMap fun i => f i ∘ₗ f₂ i) =\n        DFinsupp.mapRange.linearMap f ∘ₗ DFinsupp.mapRange.linearMap f₂",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.ext"
+  },
+  {
+    "jsonl_id": "finelean_222220",
+    "goal": "n : ℕ\n    hn : 0 < n\n    ⊢ ∃ p s, Nat.Prime p → 1 ≤ s → 3 ^ n - 2 ^ n = p ^ s → Nat.Prime n",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_222220",
+    "goal": "case h\n    n : ℕ\n    hn : 0 < n\n    ⊢ ∃ s, Nat.Prime ?w → 1 ≤ s → 3 ^ n - 2 ^ n = ?w ^ s → Nat.Prime n",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_222220",
+    "goal": "case h.h\n    n : ℕ\n    hn : 0 < n\n    a : Nat.Prime ?w\n    a_1 : 1 ≤ ?h.w\n    a_2 : 3 ^ n - 2 ^ n = ?w ^ ?h.w\n    ⊢ Nat.Prime n",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.assumption",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.assumption"
+  },
+  {
+    "jsonl_id": "finelean_203580",
+    "goal": "case mp\n    R : Type u_1\n    inst : CommRing R\n    w w_1 : R\n    left : w * w_1 = 0\n    left_1 : ¬w = 0\n    right : ¬w_1 = 0\n    ⊢ ∃ a, ¬a = 0 ∧ ∃ x, ¬x = 0 ∧ a * x = 0",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_203580",
+    "goal": "case mp.h.right\n    R : Type u_1\n    inst : CommRing R\n    w w_1 : R\n    left : w * w_1 = 0\n    left_1 : ¬w = 0\n    right : ¬w_1 = 0\n    ⊢ ∃ x, ¬x = 0 ∧ ?mp.w * x = 0",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_203580",
+    "goal": "case mp.h.right.h.right\n    R : Type u_1\n    inst : CommRing R\n    w w_1 : R\n    left : w * w_1 = 0\n    left_1 : ¬w = 0\n    right : ¬w_1 = 0\n    ⊢ ?mp.w * ?mp.h.right.w = 0",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.assumption",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|apply|global|RingPreordering.eq_zero_of_mem_of_neg_mem"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.assumption"
+  },
+  {
+    "jsonl_id": "finelean_203580",
+    "goal": "case mpr\n    R : Type u_1\n    inst : CommRing R\n    w : R\n    left : ¬w = 0\n    w_1 : R\n    left_1 : ¬w_1 = 0\n    right : w * w_1 = 0\n    ⊢ ∃ x x_1, x * x_1 = 0 ∧ ¬x = 0 ∧ ¬x_1 = 0",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_203580",
+    "goal": "case mpr.h\n    R : Type u_1\n    inst : CommRing R\n    w : R\n    left : ¬w = 0\n    w_1 : R\n    left_1 : ¬w_1 = 0\n    right : w * w_1 = 0\n    ⊢ ∃ x, ?mpr.w * x = 0 ∧ ¬?mpr.w = 0 ∧ ¬x = 0",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_203580",
+    "goal": "case mpr.h.h.left\n    R : Type u_1\n    inst : CommRing R\n    w : R\n    left : ¬w = 0\n    w_1 : R\n    left_1 : ¬w_1 = 0\n    right : w * w_1 = 0\n    ⊢ ?mpr.w * ?mpr.h.w = 0",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.assumption",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|apply|global|RingPreordering.eq_zero_of_mem_of_neg_mem"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.assumption"
+  },
+  {
+    "jsonl_id": "herald_246267",
+    "goal": "α : Type u_1\n    β : Type u_2\n    γ : Type u_3\n    f : α → β → γ\n    s : Set α\n    t : Set β\n    hf : ∀ a ∈ s, Injective (f a)\n    hs : s.PairwiseDisjoint fun a => f a '' t\n    fst : α\n    snd : β\n    fst_1 : α\n    snd_1 : β\n    h : f fst snd = f fst_1 snd_1\n    left : fst ∈ s\n    right : snd ∈ t\n    left_1 : fst_1 ∈ s\n    right_1 : snd_1 ∈ t\n    ⊢ ∃ x ∈ t, f fst_1 x = f fst_1 snd_1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "herald_246267",
+    "goal": "case h.right\n    α : Type u_1\n    β : Type u_2\n    γ : Type u_3\n    f : α → β → γ\n    s : Set α\n    t : Set β\n    hf : ∀ a ∈ s, Injective (f a)\n    hs : s.PairwiseDisjoint fun a => f a '' t\n    fst : α\n    snd : β\n    fst_1 : α\n    snd_1 : β\n    h : f fst snd = f fst_1 snd_1\n    left : fst ∈ s\n    right : snd ∈ t\n    left_1 : fst_1 ∈ s\n    right_1 : snd_1 ∈ t\n    ⊢ f fst_1 ?w = f fst_1 snd_1",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_359369",
+    "goal": "α : Type u_1\n    A B : Set α\n    ⊢ A ∩ B = B ∩ A",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.ext"
+  },
+  {
+    "jsonl_id": "finelean_200179",
+    "goal": "V : Type u_1\n    inst : AddCommGroup V\n    inst_1 : Module ℝ V\n    T : V →ₗ[ℝ] V\n    ⊢ ⇑T '' {v | T (T v) = 0} = {x | (∃ x_1, x = T x_1) ∧ T x = 0}",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.ext"
+  },
+  {
+    "jsonl_id": "finelean_200179",
+    "goal": "case h.mpr\n    V : Type u_1\n    inst : AddCommGroup V\n    inst_1 : Module ℝ V\n    T : V →ₗ[ℝ] V\n    w : V\n    right : T (T w) = 0\n    ⊢ ∃ x, T (T x) = 0 ∧ T x = T w",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_200179",
+    "goal": "case h.mpr.h.right\n    V : Type u_1\n    inst : AddCommGroup V\n    inst_1 : Module ℝ V\n    T : V →ₗ[ℝ] V\n    w : V\n    right : T (T w) = 0\n    ⊢ T ?h.mpr.w = T w",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_361602",
+    "goal": "X : Type u_1\n    Y : Type u_2\n    Z : Type u_3\n    f : X → Y\n    g : Y → Z\n    h₀ : ∀ (x y : X), f x = f y → x = y\n    h₁ : ∀ (y z : Y), g y = g z → y = z\n    x y : X\n    a : g (f x) = g (f y)\n    ⊢ x = y",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+  },
+  {
+    "jsonl_id": "finelean_361602",
+    "goal": "case a\n    X : Type u_1\n    Y : Type u_2\n    Z : Type u_3\n    f : X → Y\n    g : Y → Z\n    h₀ : ∀ (x y : X), f x = f y → x = y\n    h₁ : ∀ (y z : Y), g y = g z → y = z\n    x y : X\n    a : g (f x) = g (f y)\n    ⊢ f x = f y",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+  },
+  {
+    "jsonl_id": "finelean_244312",
+    "goal": "a : Fin 9 → ℝ\n    ha : ∀ (i : Fin 9), ¬a i = 0\n    ⊢ ∃ x,\n        x < 0 ∧ x = a 0 * a 4 * a 8 ∨\n          x = a 1 * a 5 * a 6 ∨\n            x = a 2 * a 3 * a 7 ∨ x = -(a 2 * a 4 * a 6) ∨ x = -(a 0 * a 5 * a 7) ∨ x = -(a 1 * a 3 * a 8)",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_244312",
+    "goal": "case h\n    a : Fin 9 → ℝ\n    ha : ∀ (i : Fin 9), ¬a i = 0\n    ⊢ ?w < 0 ∧ ?w = a 0 * a 4 * a 8 ∨\n        ?w = a 1 * a 5 * a 6 ∨\n          ?w = a 2 * a 3 * a 7 ∨ ?w = -(a 2 * a 4 * a 6) ∨ ?w = -(a 0 * a 5 * a 7) ∨ ?w = -(a 1 * a 3 * a 8)",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_244312",
+    "goal": "case h.h\n    a : Fin 9 → ℝ\n    ha : ∀ (i : Fin 9), ¬a i = 0\n    ⊢ ?w = a 1 * a 5 * a 6 ∨\n        ?w = a 2 * a 3 * a 7 ∨ ?w = -(a 2 * a 4 * a 6) ∨ ?w = -(a 0 * a 5 * a 7) ∨ ?w = -(a 1 * a 3 * a 8)",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_244312",
+    "goal": "case h.h.h\n    a : Fin 9 → ℝ\n    ha : ∀ (i : Fin 9), ¬a i = 0\n    ⊢ ?w = a 1 * a 5 * a 6",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_267899",
+    "goal": "f : ℝ → ℝ\n    hf : ∀ (x y : ℝ), f (x + y + f (x * y)) = f (x + y) ^ 2\n    ⊢ ∃ A, ∀ (x : ℝ), f x = 1 ↔ x ∈ A",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_267899",
+    "goal": "case h.mpr\n    f : ℝ → ℝ\n    hf : ∀ (x y : ℝ), f (x + y + f (x * y)) = f (x + y) ^ 2\n    x : ℝ\n    a : x ∈ ?w\n    ⊢ f x = 1",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.assumption",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.assumption"
+  },
+  {
+    "jsonl_id": "finelean_189773",
+    "goal": "⊢ ∃ f g, (∀ (x : ℝ), f (g x) = -x ∧ g (f x) = -x) ∧ ∀ (x : ℝ), f x = x ∧ g x = -x",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_189773",
+    "goal": "case h\n    ⊢ ∃ g, (∀ (x : ℝ), ?w (g x) = -x ∧ g (?w x) = -x) ∧ ∀ (x : ℝ), ?w x = x ∧ g x = -x",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_189773",
+    "goal": "case h.h.right.left\n    x : ℝ\n    ⊢ ?w x = x",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_189773",
+    "goal": "case h.h.left\n    x : ℝ\n    ⊢ ?h.w x = -x",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_189773",
+    "goal": "case h.h.right.right\n    x : ℝ\n    ⊢ ?h.w x = -x",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_189773",
+    "goal": "case h.h.left.right\n    x : ℝ\n    ⊢ ?w x = x",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_303388",
+    "goal": "f : ℝ → ℝ\n    h : ∀ (x : ℝ), f (2 * x + 3) + f (2 * x + 7) = 2\n    ⊢ ∃ p, (∀ (x : ℝ), f (x + p) = f x) ∧ p = 8 ∨ p = 4 ∨ p = 2 ∨ p = 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_303388",
+    "goal": "case h\n    f : ℝ → ℝ\n    h : ∀ (x : ℝ), f (2 * x + 3) + f (2 * x + 7) = 2\n    ⊢ (∀ (x : ℝ), f (x + ?w) = f x) ∧ ?w = 8 ∨ ?w = 4 ∨ ?w = 2 ∨ ?w = 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_303388",
+    "goal": "case h.h\n    f : ℝ → ℝ\n    h : ∀ (x : ℝ), f (2 * x + 3) + f (2 * x + 7) = 2\n    ⊢ ?w = 4 ∨ ?w = 2 ∨ ?w = 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_303388",
+    "goal": "case h.h.h\n    f : ℝ → ℝ\n    h : ∀ (x : ℝ), f (2 * x + 3) + f (2 * x + 7) = 2\n    ⊢ ?w = 4",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_29690",
+    "goal": "⊢ ↑(Nat.factorial 20) ≡ 9 [ZMOD 41] ∨ ↑(Nat.factorial 20) ≡ 32 [ZMOD 41]",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "numina_ab45b5a1-e9aa-5a70-89ca-d8964cb2720a",
+    "goal": "x y : ℤ\n    hx : Odd x\n    hy : Odd y\n    f : ℤ → Fin 4\n    hxy : ¬|x| = |y|\n    ⊢ ∃ a b, f a = f b ∧ a - b = x ∨ a - b = y ∨ a - b = x + y ∨ a - b = x - y",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_ab45b5a1-e9aa-5a70-89ca-d8964cb2720a",
+    "goal": "case h\n    x y : ℤ\n    hx : Odd x\n    hy : Odd y\n    f : ℤ → Fin 4\n    hxy : ¬|x| = |y|\n    ⊢ ∃ b, f ?w = f b ∧ ?w - b = x ∨ ?w - b = y ∨ ?w - b = x + y ∨ ?w - b = x - y",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "numina_ab45b5a1-e9aa-5a70-89ca-d8964cb2720a",
+    "goal": "case h.h\n    x y : ℤ\n    hx : Odd x\n    hy : Odd y\n    f : ℤ → Fin 4\n    hxy : ¬|x| = |y|\n    ⊢ f ?w = f ?h.w ∧ ?w - ?h.w = x ∨ ?w - ?h.w = y ∨ ?w - ?h.w = x + y ∨ ?w - ?h.w = x - y",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "numina_ab45b5a1-e9aa-5a70-89ca-d8964cb2720a",
+    "goal": "case h.h.h\n    x y : ℤ\n    hx : Odd x\n    hy : Odd y\n    f : ℤ → Fin 4\n    hxy : ¬|x| = |y|\n    ⊢ ?w - ?h.w = y ∨ ?w - ?h.w = x + y ∨ ?w - ?h.w = x - y",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "numina_ab45b5a1-e9aa-5a70-89ca-d8964cb2720a",
+    "goal": "case h.h.h.h\n    x y : ℤ\n    hx : Odd x\n    hy : Odd y\n    f : ℤ → Fin 4\n    hxy : ¬|x| = |y|\n    ⊢ ?w - ?h.w = x + y ∨ ?w - ?h.w = x - y",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "numina_ab45b5a1-e9aa-5a70-89ca-d8964cb2720a",
+    "goal": "case h.h.h.h.h\n    x y : ℤ\n    hx : Odd x\n    hy : Odd y\n    f : ℤ → Fin 4\n    hxy : ¬|x| = |y|\n    ⊢ ?w - ?h.w = x - y",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_90104",
+    "goal": "d : ℕ\n    hd : 0 < d\n    left : ¬d = 2\n    left_1 : ¬d = 5\n    right : ¬d = 13\n    ⊢ ∃ a b,\n        a = 2 ∧ b = 5 ∨\n          a = 2 ∧ b = 13 ∨\n            a = 5 ∧ b = 13 ∨ a = 2 ∧ b = d ∨ a = 5 ∧ b = d ∨ (a = 13 ∧ b = d) ∧ ∀ (x : ℕ), ¬x ^ 2 = a * b - 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_90104",
+    "goal": "case h\n    d : ℕ\n    hd : 0 < d\n    left : ¬d = 2\n    left_1 : ¬d = 5\n    right : ¬d = 13\n    ⊢ ∃ b,\n        ?w = 2 ∧ b = 5 ∨\n          ?w = 2 ∧ b = 13 ∨\n            ?w = 5 ∧ b = 13 ∨ ?w = 2 ∧ b = d ∨ ?w = 5 ∧ b = d ∨ (?w = 13 ∧ b = d) ∧ ∀ (x : ℕ), ¬x ^ 2 = ?w * b - 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_90104",
+    "goal": "case h.h\n    d : ℕ\n    hd : 0 < d\n    left : ¬d = 2\n    left_1 : ¬d = 5\n    right : ¬d = 13\n    ⊢ ?w = 2 ∧ ?h.w = 5 ∨\n        ?w = 2 ∧ ?h.w = 13 ∨\n          ?w = 5 ∧ ?h.w = 13 ∨\n            ?w = 2 ∧ ?h.w = d ∨ ?w = 5 ∧ ?h.w = d ∨ (?w = 13 ∧ ?h.w = d) ∧ ∀ (x : ℕ), ¬x ^ 2 = ?w * ?h.w - 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_90104",
+    "goal": "case h.h.h.left\n    d : ℕ\n    hd : 0 < d\n    left : ¬d = 2\n    left_1 : ¬d = 5\n    right : ¬d = 13\n    ⊢ ?w = 2",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_90104",
+    "goal": "case h.h.h.right\n    d : ℕ\n    hd : 0 < d\n    left : ¬d = 2\n    left_1 : ¬d = 5\n    right : ¬d = 13\n    ⊢ ?h.w = 5",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_390349",
+    "goal": "a b c : ℕ\n    ha : 0 < a\n    hb : 0 < b\n    hc : 0 < c\n    left : ¬a = b\n    left_1 : ¬a = c\n    right : ¬b = c\n    ⊢ ∃ x y,\n        x = a ∧ y = b ∨\n          x = b ∧ y = a ∨\n            x = a ∧ y = c ∨\n              x = c ∧ y = a ∨\n                x = b ∧ y = c ∨ (x = c ∧ y = b) ∧ ∀ (m n : ℕ), Odd m → Odd n → 10 ∣ x ^ m * y ^ n - x ^ n * y ^ m",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_390349",
+    "goal": "case h\n    a b c : ℕ\n    ha : 0 < a\n    hb : 0 < b\n    hc : 0 < c\n    left : ¬a = b\n    left_1 : ¬a = c\n    right : ¬b = c\n    ⊢ ∃ y,\n        ?w = a ∧ y = b ∨\n          ?w = b ∧ y = a ∨\n            ?w = a ∧ y = c ∨\n              ?w = c ∧ y = a ∨\n                ?w = b ∧ y = c ∨ (?w = c ∧ y = b) ∧ ∀ (m n : ℕ), Odd m → Odd n → 10 ∣ ?w ^ m * y ^ n - ?w ^ n * y ^ m",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_390349",
+    "goal": "case h.h\n    a b c : ℕ\n    ha : 0 < a\n    hb : 0 < b\n    hc : 0 < c\n    left : ¬a = b\n    left_1 : ¬a = c\n    right : ¬b = c\n    ⊢ ?w = a ∧ ?h.w = b ∨\n        ?w = b ∧ ?h.w = a ∨\n          ?w = a ∧ ?h.w = c ∨\n            ?w = c ∧ ?h.w = a ∨\n              ?w = b ∧ ?h.w = c ∨\n                (?w = c ∧ ?h.w = b) ∧ ∀ (m n : ℕ), Odd m → Odd n → 10 ∣ ?w ^ m * ?h.w ^ n - ?w ^ n * ?h.w ^ m",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_390349",
+    "goal": "case h.h.h.left\n    a b c : ℕ\n    ha : 0 < a\n    hb : 0 < b\n    hc : 0 < c\n    left : ¬a = b\n    left_1 : ¬a = c\n    right : ¬b = c\n    ⊢ ?w = a",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_390349",
+    "goal": "case h.h.h.right\n    a b c : ℕ\n    ha : 0 < a\n    hb : 0 < b\n    hc : 0 < c\n    left : ¬a = b\n    left_1 : ¬a = c\n    right : ¬b = c\n    ⊢ ?h.w = b",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_325789",
+    "goal": "p k : ℕ\n    hp : Nat.Prime p\n    ⊢ ∃ q, Nat.Prime q ∧ p ≡ q [MOD k]",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_325789",
+    "goal": "case h.right\n    p k : ℕ\n    hp : Nat.Prime p\n    ⊢ p ≡ ?w [MOD k]",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_146093",
+    "goal": "x y z w a : ℝ\n    ⊢ ∃ m n,\n        m = x ∧ n = y ∨\n          m = x ∧ n = z ∨\n            m = x ∧ n = w ∨\n              m = x ∧ n = a ∨\n                m = y ∧ n = z ∨\n                  m = y ∧ n = w ∨\n                    m = y ∧ n = a ∨\n                      m = z ∧ n = w ∨\n                        m = z ∧ n = a ∨ (m = w ∧ n = a) ∧ 0 < (m - n) / (1 + m * n) ∧ (m - n) / (1 + m * n) < 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_146093",
+    "goal": "case h\n    x y z w a : ℝ\n    ⊢ ∃ n,\n        ?w = x ∧ n = y ∨\n          ?w = x ∧ n = z ∨\n            ?w = x ∧ n = w ∨\n              ?w = x ∧ n = a ∨\n                ?w = y ∧ n = z ∨\n                  ?w = y ∧ n = w ∨\n                    ?w = y ∧ n = a ∨\n                      ?w = z ∧ n = w ∨\n                        ?w = z ∧ n = a ∨ (?w = w ∧ n = a) ∧ 0 < (?w - n) / (1 + ?w * n) ∧ (?w - n) / (1 + ?w * n) < 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_146093",
+    "goal": "case h.h\n    x y z w a : ℝ\n    ⊢ ?w = x ∧ ?h.w = y ∨\n        ?w = x ∧ ?h.w = z ∨\n          ?w = x ∧ ?h.w = w ∨\n            ?w = x ∧ ?h.w = a ∨\n              ?w = y ∧ ?h.w = z ∨\n                ?w = y ∧ ?h.w = w ∨\n                  ?w = y ∧ ?h.w = a ∨\n                    ?w = z ∧ ?h.w = w ∨\n                      ?w = z ∧ ?h.w = a ∨\n                        (?w = w ∧ ?h.w = a) ∧ 0 < (?w - ?h.w) / (1 + ?w * ?h.w) ∧ (?w - ?h.w) / (1 + ?w * ?h.w) < 1",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_146093",
+    "goal": "case h.h.h.left\n    x y z w a : ℝ\n    ⊢ ?w = x",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_146093",
+    "goal": "case h.h.h.right\n    x y z w a : ℝ\n    ⊢ ?h.w = y",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_213802",
+    "goal": "s : ℕ\n    hs : 1 ≤ s\n    ⊢ ∃ g, ¬g = 0 ∧ ∃ x, ¬x = 0 ∧ MvPolynomial.X 0 * MvPolynomial.X 1 ^ s = g * x",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_213802",
+    "goal": "case h.right\n    s : ℕ\n    hs : 1 ≤ s\n    ⊢ ∃ x, ¬x = 0 ∧ MvPolynomial.X 0 * MvPolynomial.X 1 ^ s = ?w * x",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_213802",
+    "goal": "case h.right.h.right\n    s : ℕ\n    hs : 1 ≤ s\n    ⊢ MvPolynomial.X 0 * MvPolynomial.X 1 ^ s = ?w * ?h.right.w",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  },
+  {
+    "jsonl_id": "finelean_46383",
+    "goal": "x y z : ℝ\n    h₀ : √(1 - x ^ 2) + 4 * y ^ 3 = 3 * z\n    h₁ : √(1 - y ^ 2) + 4 * z ^ 3 = 3 * x\n    h₂ : √(1 - z ^ 2) + 4 * x ^ 3 = 3 * y\n    ⊢ ∃ k,\n        (x = cos (↑k * π / 8) ∧ y = cos (↑k * π / 8) ∧ z = cos (↑k * π / 8)) ∧ k = 2 ∨\n          k = 3 ∨ k = 7 ∨ k = 9 ∨ k = 13 ∨ k = 14",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Exists"
+    ],
+    "chosen": "unsafe|constructors|global|Exists"
+  },
+  {
+    "jsonl_id": "finelean_46383",
+    "goal": "case h\n    x y z : ℝ\n    h₀ : √(1 - x ^ 2) + 4 * y ^ 3 = 3 * z\n    h₁ : √(1 - y ^ 2) + 4 * z ^ 3 = 3 * x\n    h₂ : √(1 - z ^ 2) + 4 * x ^ 3 = 3 * y\n    ⊢ (x = cos (↑?w * π / 8) ∧ y = cos (↑?w * π / 8) ∧ z = cos (↑?w * π / 8)) ∧ ?w = 2 ∨\n        ?w = 3 ∨ ?w = 7 ∨ ?w = 9 ∨ ?w = 13 ∨ ?w = 14",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_46383",
+    "goal": "case h.h\n    x y z : ℝ\n    h₀ : √(1 - x ^ 2) + 4 * y ^ 3 = 3 * z\n    h₁ : √(1 - y ^ 2) + 4 * z ^ 3 = 3 * x\n    h₂ : √(1 - z ^ 2) + 4 * x ^ 3 = 3 * y\n    ⊢ ?w = 3 ∨ ?w = 7 ∨ ?w = 9 ∨ ?w = 13 ∨ ?w = 14",
+    "allowedUnsafeRules": [
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps",
+      "unsafe|constructors|global|Or"
+    ],
+    "chosen": "unsafe|constructors|global|Or"
+  },
+  {
+    "jsonl_id": "finelean_46383",
+    "goal": "case h.h.h\n    x y z : ℝ\n    h₀ : √(1 - x ^ 2) + 4 * y ^ 3 = 3 * z\n    h₁ : √(1 - y ^ 2) + 4 * z ^ 3 = 3 * x\n    h₂ : √(1 - z ^ 2) + 4 * x ^ 3 = 3 * y\n    ⊢ ?w = 3",
+    "allowedUnsafeRules": [
+      "safe|tactic|global|Aesop.BuiltinRules.rfl",
+      "unsafe|tactic|global|Aesop.BuiltinRules.ext",
+      "unsafe|tactic|global|Aesop.BuiltinRules.applyHyps"
+    ],
+    "chosen": "safe|tactic|global|Aesop.BuiltinRules.rfl"
+  }
+]

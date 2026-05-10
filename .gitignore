@@ -45,6 +45,10 @@ training/data/rl*/
 training/experiments/*/*.log
 training/experiments/*/model*.bin
 training/experiments/exp08_num_pool_counts/native_serve
+**/native_serve
+training/experiments/*/logs/
+training/experiments/*/outputs/
+training/experiments/*/results/
 training/experiments/results/
 training/training/
 venv/
