@@ -85,13 +85,18 @@ abs_path() {
 
 build_native_server() {
   local native_model="$1"
-  if [[ "$native_model" != "exp08" ]]; then
+  local exp_dir
+  if [[ "$native_model" == "exp08" ]]; then
+    exp_dir="exp08_num_pool_counts"
+  elif [[ "$native_model" == "exp09" ]]; then
+    exp_dir="exp09_heuristics"
+  else
     echo "unknown native model: $native_model" >&2
     return 1
   fi
 
   local src="$ROOT/NeuralTactic/native/model.cpp"
-  local out="$SCRIPT_DIR/exp08_num_pool_counts/native_serve"
+  local out="$SCRIPT_DIR/$exp_dir/native_serve"
   if [[ ! -x "$out" || "$src" -nt "$out" ]]; then
     echo "building native server: $out" >&2
     "$CXX" -DNEURAL_GRIND_STANDALONE -O3 -std=c++17 "$src" -o "$out"

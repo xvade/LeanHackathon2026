@@ -14,6 +14,9 @@ Current benchmark shape:
 - every problem has at least 1 `grind_collect` split
 - every problem has at least 1 multi-candidate split
 
+Herald source:
+- `training/data/herald_splits.jsonl`: Additional high-quality verified data from output_1-5.jsonl files.
+
 ## Clean Training Snapshot
 
 Generate a clean training snapshot with:

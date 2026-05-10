@@ -1,0 +1,37 @@
+# id|enabled|no_model|model|serve|margin_milli|include_expr_text|notes
+#
+# This matrix is timing-first. Enabled rows are the current default experiment set:
+# exact overhead control, cheap numeric models, and exp08 margin gates.
+# Disabled rows preserve the old text/context variants for explicit opt-in runs.
+# Existing model.pt rows are historical artifacts. Retrain clean variants from
+# training/data/clean/train_splits.jsonl before treating benchmark scores as
+# clean held-out results.
+no_model|1|1|-|-|0|0|Exact neural_grind wrapper overhead; delegates to native Action.splitNext.
+exp01_numeric_only|1|0|training/experiments/exp01_numeric_only/model.pt|training/experiments/exp01_numeric_only/serve.py|0|0|Old numeric-only clone; cheap model, Python inference.
+exp08_num_pool_counts|1|0|training/experiments/exp08_num_pool_counts/model.pt|training/experiments/exp08_num_pool_counts/serve.py|0|0|Cheap numeric plus pool-count features.
+exp08_num_pool_counts_m100|1|0|training/experiments/exp08_num_pool_counts/model.pt|training/experiments/exp08_num_pool_counts/serve.py|100|0|Exp08 with 100 milli-logit margin gate.
+exp08_num_pool_counts_m500|1|0|training/experiments/exp08_num_pool_counts/model.pt|training/experiments/exp08_num_pool_counts/serve.py|500|0|Exp08 with 500 milli-logit margin gate.
+exp08_native_m100|1|0|training/experiments/exp08_num_pool_counts/model.native.bin|native:exp08|100|0|Native C++ exp08 scorer with 100 milli-logit margin gate.
+exp08_native_m500|1|0|training/experiments/exp08_num_pool_counts/model.native.bin|native:exp08|500|0|Native C++ exp08 scorer with 500 milli-logit margin gate.
+exp08_clean|1|0|training/experiments/exp08_num_pool_counts/model_clean.pt|training/experiments/exp08_num_pool_counts/serve.py|0|0|Clean exp08 trained on benchmark-excluded combined split data.
+exp08_clean_m100|1|0|training/experiments/exp08_num_pool_counts/model_clean.pt|training/experiments/exp08_num_pool_counts/serve.py|100|0|Clean exp08 with 100 milli-logit margin gate.
+exp08_clean_m500|1|0|training/experiments/exp08_num_pool_counts/model_clean.pt|training/experiments/exp08_num_pool_counts/serve.py|500|0|Clean exp08 with 500 milli-logit margin gate.
+exp08_clean_native|1|0|training/experiments/exp08_num_pool_counts/model_clean.native.bin|native:exp08|0|0|Native C++ clean exp08, always override when the model returns an anchor.
+exp08_clean_native_m100|1|0|training/experiments/exp08_num_pool_counts/model_clean.native.bin|native:exp08|100|0|Native C++ clean exp08 with 100 milli-logit margin gate.
+exp08_clean_native_m500|1|0|training/experiments/exp08_num_pool_counts/model_clean.native.bin|native:exp08|500|0|Native C++ clean exp08 with 500 milli-logit margin gate.
+exp08_clean_native_m1000|1|0|training/experiments/exp08_num_pool_counts/model_clean.native.bin|native:exp08|1000|0|Native C++ clean exp08 with 1000 milli-logit margin gate.
+exp08_clean_native_m2000|1|0|training/experiments/exp08_num_pool_counts/model_clean.native.bin|native:exp08|2000|0|Native C++ clean exp08 with 2000 milli-logit margin gate.
+exp08_clean_native_m5000|1|0|training/experiments/exp08_num_pool_counts/model_clean.native.bin|native:exp08|5000|0|Native C++ clean exp08 with 5000 milli-logit margin gate.
+exp08_clean_native_m10000|1|0|training/experiments/exp08_num_pool_counts/model_clean.native.bin|native:exp08|10000|0|Native C++ clean exp08 with 10000 milli-logit margin gate.
+exp09_heuristics|1|0|training/experiments/exp09_heuristics/model.native.bin|native:exp09|0|0|New heuristics (tryPostpone, variant, isGrindChoice). 32-dim native model.
+exp08_rl_native|1|0|training/experiments/exp08_num_pool_counts/model_rl.native.bin|native:exp08|0|0|RL-finetuned exp08 (REINFORCE+imitation, numCases reward), always override.
+exp08_rl_native_m100|1|0|training/experiments/exp08_num_pool_counts/model_rl.native.bin|native:exp08|100|0|RL-finetuned exp08 with 100 milli-logit margin gate.
+exp08_rl_native_m500|1|0|training/experiments/exp08_num_pool_counts/model_rl.native.bin|native:exp08|500|0|RL-finetuned exp08 with 500 milli-logit margin gate.
+exp08_rl_native_m1000|1|0|training/experiments/exp08_num_pool_counts/model_rl.native.bin|native:exp08|1000|0|RL-finetuned exp08 with 1000 milli-logit margin gate.
+exp08_rl_native_m5000|1|0|training/experiments/exp08_num_pool_counts/model_rl.native.bin|native:exp08|5000|0|RL-finetuned exp08 with 5000 milli-logit margin gate.
+exp02_pool_aggregates|0|0|training/experiments/exp02_pool_aggregates/model.pt|training/experiments/exp02_pool_aggregates/serve.py|0|0|Old pool aggregate model; disabled by default.
+exp03_current|0|0|training/experiments/exp03_current/model.pt|training/experiments/exp03_current/serve.py|0|1|Old full model with candidate exprText; measures pretty-printing cost.
+exp04_no_grindstate|0|0|training/experiments/exp04_no_grindstate/model.pt|training/experiments/exp04_no_grindstate/serve.py|0|1|Old no-grindState ablation; text path.
+exp05_no_statePP|0|0|training/experiments/exp05_no_statePP/model.pt|training/experiments/exp05_no_statePP/serve.py|0|1|Old no-statePP ablation; text path.
+exp06_no_exprtext|0|0|training/experiments/exp06_no_exprtext/model.pt|training/experiments/exp06_no_exprtext/serve.py|0|0|Old no-exprText ablation.
+exp07_grindstate_counts|0|0|training/experiments/exp07_grindstate_counts/model.pt|training/experiments/exp07_grindstate_counts/serve.py|0|0|Old grindState-count feature model.

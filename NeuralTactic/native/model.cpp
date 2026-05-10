@@ -28,7 +28,7 @@
 
 namespace {
 
-constexpr uint32_t kInputDim = 27;
+constexpr uint32_t kInputDim = 32;
 
 struct Weights {
     uint32_t input_dim = 0;
@@ -56,6 +56,9 @@ struct Candidate {
     bool isRec = false;
     std::string source;
     int generation = 0;
+    bool tryPostpone = false;
+    std::string variant;
+    bool isGrindChoice = false;
 };
 
 struct Scored {
@@ -159,6 +162,9 @@ static std::vector<Candidate> parse_candidates(const char* cands_json) {
         c.isRec = bool_field(obj, "isRec");
         c.source = string_field(obj, "source");
         c.generation = static_cast<int>(number_field(obj, "generation"));
+        c.tryPostpone = bool_field(obj, "tryPostpone");
+        c.variant = string_field(obj, "variant");
+        c.isGrindChoice = bool_field(obj, "isGrindChoice");
         if (c.anchor != 0) out.push_back(std::move(c));
         p = end + 1;
     }
@@ -172,6 +178,14 @@ static int source_index(const std::string& source) {
     };
     for (int i = 0; i < 9; ++i) {
         if (source == tags[i]) return i;
+    }
+    return -1;
+}
+
+static int variant_index(const std::string& variant) {
+    static const char* tags[] = { "default", "imp", "arg" };
+    for (int i = 0; i < 3; ++i) {
+        if (variant == tags[i]) return i;
     }
     return -1;
 }
@@ -230,6 +244,13 @@ static std::vector<float> make_features(
     x[i++] = 0.0f;
     x[i++] = 0.0f;
     x[i++] = 0.0f;
+
+    // new heuristics (exp09)
+    x[i++] = c.tryPostpone ? 1.0f : 0.0f;
+    int var = variant_index(c.variant);
+    for (int j = 0; j < 3; ++j) x[i++] = (var == j) ? 1.0f : 0.0f;
+    x[i++] = c.isGrindChoice ? 1.0f : 0.0f;
+
     return x;
 }
 
@@ -249,7 +270,7 @@ static bool load_weights_from(const char* path, Weights& w) {
     in.read(reinterpret_cast<char*>(&version), sizeof(version));
     in.read(reinterpret_cast<char*>(&input_dim), sizeof(input_dim));
     in.read(reinterpret_cast<char*>(&hidden_dim), sizeof(hidden_dim));
-    if (!in || std::strncmp(magic, "NGEXP08", 7) != 0 ||
+    if (!in || std::strncmp(magic, "NGEXP09", 7) != 0 ||
         version != 1 || input_dim != kInputDim || hidden_dim == 0) {
         return false;
     }
@@ -277,6 +298,8 @@ static bool ensure_weights() {
     if (const char* env = std::getenv("GRIND_NATIVE_WEIGHTS")) {
         if (*env) paths.emplace_back(env);
     }
+    paths.emplace_back("../training/experiments/exp09_heuristics/model.native.bin");
+    paths.emplace_back("training/experiments/exp09_heuristics/model.native.bin");
     paths.emplace_back("../training/experiments/exp08_num_pool_counts/model.native.bin");
     paths.emplace_back("training/experiments/exp08_num_pool_counts/model.native.bin");
 

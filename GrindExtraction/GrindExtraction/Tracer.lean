@@ -75,6 +75,8 @@ structure CandidateInfo where
   isRec      : Bool
   source     : String  -- "input" | "ematch" | "inj" | "ext" | "mbtc" | "beta" | "forallProp" | "existsProp" | "guard"
   generation : Nat     -- grind's internal generation counter; lower = older candidate
+  tryPostpone : Bool
+  variant    : String  -- "default" | "imp" | "arg"
   deriving ToJson
 
 structure GoalFeatures where
@@ -120,6 +122,12 @@ At each split decision:
 private def GRIND_STATE_CLASSES : List Name :=
   [`grind.assert, `grind.eqc, `grind.ematch.instance.assignment]
 
+private def variantStr (si : SplitInfo) : String :=
+  match si with
+  | .default _ _ => "default"
+  | .imp _ _ _   => "imp"
+  | .arg _ _ _ _ _ => "arg"
+
 private def sourceTagStr (si : SplitInfo) : String :=
   match si.source with
   | .ematch _     => "ematch"
@@ -146,12 +154,18 @@ def collectingAction
         anchors.candidates.mapM fun c => do
           let pp  := Format.pretty (← ppExpr c.e)
           let gen := goal.getGeneration c.e  -- pure: lower = older candidate
+          let status ← checkSplitStatus c.c
+          let tryPostpone := match status with
+            | .ready _ _ tp => tp
+            | _ => false
           return { anchor     := c.anchor
                    exprText   := pp
                    numCases   := c.numCases
                    isRec      := c.isRec
                    source     := sourceTagStr c.c
-                   generation := gen : CandidateInfo }
+                   generation := gen
+                   tryPostpone := tryPostpone
+                   variant    := variantStr c.c : CandidateInfo }
       let numCandidates := anchors.candidates.size
       -- goal features
       let splitDepth := goal.split.num

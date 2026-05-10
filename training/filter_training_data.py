@@ -17,8 +17,9 @@ TRAINING = Path(__file__).parent
 DEFAULT_INPUTS = [
     TRAINING / "data" / "verified_splits.jsonl",
     TRAINING / "data" / "workbook_splits.jsonl",
-    TRAINING / "data" / "numina_finelean_splits.jsonl",
+    TRAINING / "data" / "numina_finelean_combined_splits.jsonl",
     TRAINING / "data" / "numina_finelean_v2_splits.jsonl",
+    TRAINING / "data" / "herald_splits.jsonl",
 ]
 
 

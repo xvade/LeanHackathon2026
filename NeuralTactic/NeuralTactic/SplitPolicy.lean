@@ -34,6 +34,12 @@ namespace NeuralTactic
 private def jsonStr (s : String) : String :=
   "\"" ++ (s.replace "\\" "\\\\" |>.replace "\"" "\\\"" |>.replace "\n" "\\n") ++ "\""
 
+private def variantStr (si : SplitInfo) : String :=
+  match si with
+  | .default _ _ => "default"
+  | .imp _ _ _   => "imp"
+  | .arg _ _ _ _ _ => "arg"
+
 private def sourceTagStr (si : SplitInfo) : String :=
   match si.source with
   | .ematch _     => "ematch"  | .ext _        => "ext"
@@ -192,12 +198,47 @@ def neuralSplitNext (stopAtFirstFailure := true) (compress := true) : Action :=
         -- goalFeatures JSON (one line, avoids multi-line `++` parse issues)
         let gfJson := "{\"splitDepth\":" ++ toString goal'.split.num ++ ",\"assertedCount\":" ++ toString goal'.facts.size ++ ",\"ematchRounds\":" ++ toString goal'.ematch.num ++ ",\"splitTraceLen\":" ++ toString goal'.split.trace.length ++ ",\"numCandidates\":" ++ toString anchors.candidates.size ++ "}"
 
+        let (grindChoice, _) ← GoalM.run goal' do
+          let mut best : Option (SplitCandidateWithAnchor × Nat × Bool × Bool) := none
+          for c in anchors.candidates do
+            let status ← checkSplitStatus c.c
+            if let .ready numCases isRec tryPostpone := status then
+              if (← cheapCasesOnly) && numCases > 1 then
+                continue
+              match best with
+              | none =>
+                best := some (c, numCases, isRec, tryPostpone)
+              | some (c', numCases', isRec', tryPostpone') =>
+                let isBetter ← do
+                  if tryPostpone' && !tryPostpone then pure true
+                  else if tryPostpone && !tryPostpone' then pure false
+                  else if numCases == 1 && !isRec && numCases' > 1 then pure true
+                  else if (← getGeneration c.e) < (← getGeneration c'.e) then pure true
+                  else if numCases < numCases' then pure true
+                  else pure false
+                if isBetter then
+                  best := some (c, numCases, isRec, tryPostpone)
+          return best.map (·.1.anchor)
+
         -- candidates JSON — build each entry as a local let, then return
         let sendExprText ← includeExprText
         let candJsons ← anchors.candidates.mapM fun c => do
           let pp ← if sendExprText then Format.pretty <$> ppExpr c.e else pure ""
           let gen := goal'.getGeneration c.e
-          let j := "{\"anchor\":" ++ toString c.anchor ++ ",\"exprText\":" ++ jsonStr pp ++ ",\"numCases\":" ++ toString c.numCases ++ ",\"isRec\":" ++ (if c.isRec then "true" else "false") ++ ",\"source\":" ++ jsonStr (sourceTagStr c.c) ++ ",\"generation\":" ++ toString gen ++ "}"
+          let (status, _) ← GoalM.run goal' (checkSplitStatus c.c)
+          let tryPostpone := match status with
+            | .ready _ _ tp => tp
+            | _ => false
+          let isGrindChoice := (grindChoice == some c.anchor)
+          let j := "{\"anchor\":" ++ toString c.anchor ++
+            ",\"exprText\":" ++ jsonStr pp ++
+            ",\"numCases\":" ++ toString c.numCases ++
+            ",\"isRec\":" ++ (if c.isRec then "true" else "false") ++
+            ",\"source\":" ++ jsonStr (sourceTagStr c.c) ++
+            ",\"generation\":" ++ toString gen ++
+            ",\"tryPostpone\":" ++ (if tryPostpone then "true" else "false") ++
+            ",\"variant\":" ++ jsonStr (variantStr c.c) ++
+            ",\"isGrindChoice\":" ++ (if isGrindChoice then "true" else "false") ++ "}"
           pure j
         let candsArr := "[" ++ ",".intercalate candJsons.toList ++ "]"
 

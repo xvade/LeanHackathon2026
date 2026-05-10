@@ -484,15 +484,17 @@ Purpose:
 7. Next: run a model-width sweep on the strongest clean exp08 mix to see how
    far size reduction alone can cut native inference overhead.
 
-8. Implement EXP-2 cost-aware imitation and EXP-3 calibration sweeps.
-
-9. Build the first hard-negative dataset from failed ungated rows and run
-   EXP-4 failure-contrast training.
-
-10. Train the rich teacher and distill a cheap student only after the clean
+8. Done: Implement NGEXP09 with 32-dim features (tryPostpone, variant, isGrindChoice).
+9. Done: Verify NGEXP09 pipeline with highly branching stress-test theorem.
+10. In Progress: Re-collect all training data (including new Herald source) with 32-dim heuristics.
+11. Next: Train full exp09 model on clean combined data.
+12. Next: Run exp09 in the timing matrix to compare against exp08 and grind.
+13. Implement EXP-2 cost-aware imitation and EXP-3 calibration sweeps.
+14. Build the first hard-negative dataset from failed ungated rows and run
+    EXP-4 failure-contrast training.
+15. Train the rich teacher and distill a cheap student only after the clean
     cheap baselines are measured, so the benefit is attributable.
-
-11. Start outcome-aware fine-tuning once the native clean model is stable enough
+16. Start outcome-aware fine-tuning once the native clean model is stable enough
     that timing feedback is meaningful.
 
 ## Progress Notes

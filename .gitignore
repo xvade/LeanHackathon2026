@@ -1,39 +1,50 @@
+
+!.env.example
+!training/data/split_active_benchmark.jsonl
+# Benchmark timing logs
 # Build artifacts
-.lake/
-lake-manifest.json
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.egg-info/
-dist/
-build/
-
+# Editor
+# Environment
 # ML models and data (can be regenerated)
+# OS
+# Python
+# Session artifacts
+**/.collect_scratch/
+*.egg-info/
+*.native.bin
 *.pt
 *.pth
-training/data/rl*/
-training/data/collected*.jsonl
-
-# Environment
-.venv/
-venv/
-env/
-.env
-.env.*
-!.env.example
-
-# Editor
-.vscode/
-.idea/
-*.swp
+*.pyc
+*.pyo
 *.swo
+*.swp
 *~
-
-# OS
 .DS_Store
 .claude/
-
-# Session artifacts
 .copilot/
+.env
+.env.*
+.idea/
+.lake/
+.venv/
+.vscode/
+__pycache__/
+build/
+dist/
+env/
+lake-manifest.json
+scratch/
+training/*.jsonl
+training/benchmarks/timing_*.log
+training/data/*.jsonl
+training/data/clean/
+training/data/collected*.jsonl
+training/data/logs/
+training/data/raw/*.jsonl
+training/data/rl*/
+training/experiments/*/*.log
+training/experiments/*/model*.bin
+training/experiments/exp08_num_pool_counts/native_serve
+training/experiments/results/
+training/training/
+venv/

@@ -243,10 +243,14 @@ def main() -> None:
     snippets = []
     for r in records:
         try:
-            s = transform_snippet(r["lean_snippet"], r["grind_call"])
+            snippet = r.get("lean_snippet") or r.get("solved_formal_statement")
+            if not snippet:
+                print(f"  WARNING: No snippet found for {r.get('name') or r.get('id')}")
+                continue
+            s = transform_snippet(snippet, r["grind_call"])
             snippets.append(s)
         except Exception as e:
-            print(f"  WARNING: Could not transform snippet for {r.get('name')}: {e}")
+            print(f"  WARNING: Could not transform snippet for {r.get('name') or r.get('id')}: {e}")
 
     print(f"Transformed {len(snippets)} snippets.")
 
