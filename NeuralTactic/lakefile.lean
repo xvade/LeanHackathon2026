@@ -26,4 +26,7 @@ extern_lib leanNeuralModel pkg := do
   buildStaticLib (pkg.staticLibDir / nameToStaticLib "leanNeuralModel") #[oJob]
 
 @[default_target]
-lean_lib NeuralTactic
+lean_lib NeuralTactic where
+  -- leanNeuralModel: embedded bag-of-words model (compiled from native/model.cpp)
+  -- libclient:       Unix socket client for the Python inference server
+  moreLinkArgs := #["-Lnative", "-lclient"]

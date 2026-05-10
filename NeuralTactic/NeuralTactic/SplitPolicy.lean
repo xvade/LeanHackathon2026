@@ -1,8 +1,23 @@
+/-
+`NeuralTactic.SplitPolicy` — neural split-candidate ranker.
+
+At each split decision `neuralSplitNext`:
+  1. Pretty-prints the current goal and every candidate expression.
+  2. Calls `scoreCandidate` (→ C FFI → Unix socket → server.py) to score them.
+  3. Currently delegates the actual split to `splitNext` regardless of scores.
+
+The scores are computed for real on every call but not yet used to override
+grind's split selection. The remaining work is using the model's argmax to call
+`splitCore` directly — blocked on the side-effect issue documented in
+`getSplitCandidateAnchors` vs `splitNext` interaction (see session notes).
+-/
 import Lean.Meta.Tactic.Grind.Split
 
 open Lean Meta
 
 namespace NeuralTactic
+
+-- ── Model scoring interface ───────────────────────────────────────────────────
 
 /--
 Score a (goal, candidate) pair by calling the inference server.
@@ -17,34 +32,25 @@ work even without the server (just with a weaker policy).
 @[extern "lean_neural_score"]
 opaque scoreCandidate (goalPP : @& String) (candPP : @& String) : Float
 
+-- ── Policy action ─────────────────────────────────────────────────────────────
 
 def neuralSplitNext (stopAtFirstFailure := true) (compress := true) : Grind.Action :=
   fun goal kna kp => do
-    -- Get candidate pool, capturing the updated goal state
-    let (anchors, goal') ← Grind.GoalM.run goal Grind.getSplitCandidateAnchors
-    if anchors.candidates.isEmpty then
-      kna goal'
-    else
+    -- Peek at candidate pool without consuming the modified goal state
+    let (anchors, _) ← Grind.GoalM.run goal Grind.getSplitCandidateAnchors
+    match anchors.candidates.toList with
+    | [] => (Grind.Action.splitNext stopAtFirstFailure compress) goal kna kp
+    | _ =>
       -- Pretty-print goal and all candidates (text in, text out — no serialization)
-      let goalPP  ← Format.pretty <$> ppExpr (← goal'.mvarId.getType)
+      let goalPP  ← Format.pretty <$> ppExpr (← goal.mvarId.getType)
       let candPPs ← anchors.candidates.mapM fun c =>
         Format.pretty <$> ppExpr c.e
-      -- Score every candidate via the inference backend
-      let scores := candPPs.map (scoreCandidate goalPP)
-      -- Select the highest-scoring candidate (argmax), using Option to avoid Inhabited requirement
-      let best := (anchors.candidates.zip scores).foldl (fun acc (cand, score) =>
-        match acc with
-        | none => some (cand, score)
-        | some (_, bestScore) => if score > bestScore then some (cand, score) else acc
-      ) (none : Option (Grind.SplitCandidateWithAnchor × Float))
-      let some (bestCand, _) := best | kna goal'
-      -- Compute intro generation and perform the split on the chosen candidate
-      let gen := goal'.getGeneration bestCand.e
-      let genNew := if bestCand.numCases > 1 || bestCand.isRec then gen + 1 else gen
-      let x : Grind.Action :=
-        Grind.Action.splitCore bestCand.c bestCand.numCases bestCand.isRec stopAtFirstFailure compress >>
-        Grind.Action.intros genNew >>
-        Grind.Action.assertAll
-      x goal' kna kp
+      -- Score every candidate via the server (real model inference happens here)
+      let _scores := candPPs.map (scoreCandidate goalPP)
+      -- TODO: use scores to call splitCore on the argmax instead of splitNext.
+      -- Blocked by the getSplitCandidateAnchors side-effect issue: calling it
+      -- before splitNext corrupts the candidate state. Fix requires either
+      -- saving/restoring GrindM state or accessing candidates without checkSplitStatus.
+      (Grind.Action.splitNext stopAtFirstFailure compress) goal kna kp
 
 end NeuralTactic

@@ -16,4 +16,4 @@ rev = "v4.30.0-rc2"
 
 [[lean_lib]]
 name = "NeuralTactic"
-moreLinkArgs = ["-L./native", "-lmodel", "-lstdc++"]
+moreLinkArgs = ["-Lnative", "-lclient"]

@@ -1,3 +1,25 @@
+/-
+`DataCollection.Tracer` — grind trace and candidate-pool collection.
+
+Provides two tactics:
+
+  `grind_trace`   — records goal, events (including splits), and solved flag.
+
+  `grind_collect` — at each split decision, captures the full candidate pool
+                    (human-readable pp for every candidate) and which candidate
+                    grind actually chose. This is the ranking model's training signal.
+
+Output schema for `grind_collect` (one JSON line per theorem):
+  {
+    "theoremName": "...",
+    "goalPP":      "...",
+    "solved":      true/false,
+    "splitDecisions": [
+      { "pool": [{"pp": "..."}, ...], "chosenIdx": N },
+      ...
+    ]
+  }
+-/
 import Lean
 import Lean.Elab.Tactic.Grind
 import Lean.Meta.Tactic.Grind.Split
@@ -8,7 +30,7 @@ import Lean.Meta.Tactic.Grind.Intro
 
 open Lean Meta Elab Tactic Grind
 
-namespace GrindExtraction
+namespace DataCollection
 
 -- ── Shared trace infrastructure ───────────────────────────────────────────────
 
@@ -69,29 +91,12 @@ def evalGrindTrace : Tactic := fun _ => do
 -- ── grind_collect (full candidate pool with grind's actual choice) ────────────
 
 structure CandidateInfo where
-  anchor     : UInt64
-  exprText   : String
-  numCases   : Nat
-  isRec      : Bool
-  source     : String  -- "input" | "ematch" | "inj" | "ext" | "mbtc" | "beta" | "forallProp" | "existsProp" | "guard"
-  generation : Nat     -- grind's internal generation counter; lower = older candidate
-  deriving ToJson
-
-structure GoalFeatures where
-  splitDepth : Nat
-  assertedCount : Nat
-  ematchRounds : Nat
-  splitTraceLen : Nat
-  numCandidates : Nat
+  pp : String  -- human-readable expression; fed directly to the ranking model
   deriving ToJson
 
 structure SplitDecision where
-  step         : Nat
-  goalFeatures : GoalFeatures
-  statePP      : Array String   -- tactic proof state: local hyps + goal at this split
-  grindState   : Array String   -- grind.assert + grind.eqc events accumulated so far
-  pool         : Array CandidateInfo
-  chosenAnchor : UInt64
+  pool      : Array CandidateInfo
+  chosenIdx : Nat  -- index of the candidate grind's heuristic selected
   deriving ToJson
 
 structure CollectSample where
@@ -117,67 +122,18 @@ At each split decision:
 3. Observes the grind.split trace to find which candidate was chosen.
 4. Logs {pool, chosenIdx} — the ranking model's training signal.
 -/
-private def GRIND_STATE_CLASSES : List Name :=
-  [`grind.assert, `grind.eqc, `grind.ematch.instance.assignment]
-
-private def sourceTagStr (si : SplitInfo) : String :=
-  match si.source with
-  | .ematch _     => "ematch"
-  | .ext _        => "ext"
-  | .mbtc _ _ _   => "mbtc"
-  | .beta _       => "beta"
-  | .forallProp _ => "forallProp"
-  | .existsProp _ => "existsProp"
-  | .input        => "input"
-  | .inj _        => "inj"
-  | .guard _      => "guard"
-
 def collectingAction
-    (decisions      : IO.Ref (Array SplitDecision))
-    (proofSnapStart : Nat)    -- trace index at proof start (to accumulate from)
+    (decisions : IO.Ref (Array SplitDecision))
     (compress := true) : Action :=
   fun goal kna kp => do
     let (anchors, goal) ← GoalM.run goal getSplitCandidateAnchors
     if anchors.candidates.isEmpty then
       kna goal
     else
-      -- Build the pool: anchor, exprText, numCases, isRec, source, generation
+      -- Build the pool: just pretty-printed expressions, no serialization
       let (pool, _) ← GoalM.run goal do
         anchors.candidates.mapM fun c => do
-          let pp  := Format.pretty (← ppExpr c.e)
-          let gen := goal.getGeneration c.e  -- pure: lower = older candidate
-          return { anchor     := c.anchor
-                   exprText   := pp
-                   numCases   := c.numCases
-                   isRec      := c.isRec
-                   source     := sourceTagStr c.c
-                   generation := gen : CandidateInfo }
-      let numCandidates := anchors.candidates.size
-      -- goal features
-      let splitDepth := goal.split.num
-      let assertedCount := goal.facts.size
-      let ematchRounds := goal.ematch.num
-      let splitTraceLen := goal.split.trace.length
-      let goalFeatures := GoalFeatures.mk splitDepth assertedCount ematchRounds splitTraceLen numCandidates
-      -- Tactic proof state: local hypotheses + goal (what you see in the infoview)
-      let decl ← goal.mvarId.getDecl
-      let hyps ← decl.lctx.foldlM (init := #[]) fun acc d => do
-        if d.isImplementationDetail then return acc
-        let typePP := Format.pretty (← ppExpr d.type)
-        return acc.push s!"{d.userName} : {typePP}"
-      let goalTypePP := Format.pretty (← ppExpr (← goal.mvarId.getType))
-      let statePP := hyps.push s!"⊢ {goalTypePP}"
-      -- Grind internal state: all grind.assert and grind.eqc events accumulated since proof start
-      let allTracesSoFar := (← getTraceState).traces
-      let grindState ← (allTracesSoFar.toArray.extract proofSnapStart allTracesSoFar.size).foldlM
-        (init := #[]) fun acc elem => do
-          match elem.msg with
-          | .trace data inner _ =>
-            if GRIND_STATE_CLASSES.contains data.cls then do
-              let fmt ← inner.format
-              return acc.push (Format.pretty fmt)
-            else return acc
-          | _ => return acc
+          return { pp := Format.pretty (← ppExpr c.e) : CandidateInfo }
       -- Enable grind.split trace to observe grind's actual choice
       let snapBefore := (← getTraceState).traces.size
       let result ← (Action.splitNext (stopAtFirstFailure := true) compress) goal kna kp
@@ -196,31 +152,19 @@ def collectingAction
             else return none
           | _ => return none
       ) (none : Option String)
-      -- Resolve chosenAnchor by matching chosen pretty-print to pool entries and using anchors array
-      let chosenAnchor := match chosenPP? with
-        | none => match anchors.candidates.toList with
-          | [] => 0
-          | a :: _ => SplitCandidateWithAnchor.anchor a
-        | some pp =>
-          let pairs := List.zip (anchors.candidates.toList) (pool.toList)
-          match List.find? (fun p => CandidateInfo.exprText (Prod.snd p) == pp) pairs with
-          | some p => SplitCandidateWithAnchor.anchor (Prod.fst p)
-          | none => match anchors.candidates.toList with
-            | [] => 0
-            | a :: _ => SplitCandidateWithAnchor.anchor a
-      let cur ← decisions.get
-      let stepIdx := cur.size
-      decisions.modify fun ds => ds.push { step := stepIdx, goalFeatures, statePP, grindState, pool, chosenAnchor }
+      let chosenIdx := match chosenPP? with
+        | none    => 0  -- fallback: trace not captured (shouldn't happen)
+        | some pp => (pool.toList.findIdx? fun c => c.pp == pp).getD 0
+      decisions.modify fun ds => ds.push { pool, chosenIdx }
       return result
 
 /-- Assemble a finish action that collects split decisions. -/
 def mkCollectFinish
-    (decisions      : IO.Ref (Array SplitDecision))
-    (proofSnapStart : Nat)
-    (maxIter        : Nat := Action.maxIterationsDefault) : IO Action := do
+    (decisions : IO.Ref (Array SplitDecision))
+    (maxIter   : Nat := Action.maxIterationsDefault) : IO Action := do
   let solvers ← Solvers.mkAction
   let step : Action :=
-    solvers <|> Action.instantiate <|> collectingAction decisions proofSnapStart <|> Action.mbtc
+    solvers <|> Action.instantiate <|> collectingAction decisions <|> Action.mbtc
   return Action.checkTactic (warnOnly := true) >>
          Action.intros 0 >>
          Action.assertAll >>
@@ -237,15 +181,10 @@ def evalGrindCollect : Tactic := fun _ => do
   let config   : Grind.Config := {}
   let params   ← Grind.mkDefaultParams config
   let decisions ← IO.mkRef #[]
-  -- Enable grind state trace classes and snapshot before grind starts
-  let proofSnapStart := (← getTraceState).traces.size
   let solved ← try
-    withOptions (fun opts =>
-      GRIND_STATE_CLASSES.foldl (fun o cls => o.setBool (`trace ++ cls) true) opts
-    ) do
     Grind.withProtectedMCtx config mvarId fun mvarId' => do
       let result ← Grind.GrindM.runAtGoal mvarId' params fun goal => do
-        let finish ← mkCollectFinish decisions proofSnapStart
+        let finish ← mkCollectFinish decisions
         match (← finish.run goal) with
         | .closed _ => pure true
         | .stuck _  => pure false
@@ -255,4 +194,4 @@ def evalGrindCollect : Tactic := fun _ => do
   let splitDecisions ← decisions.get
   IO.println (toJson (CollectSample.mk thmName goalPP solved splitDecisions)).compress
 
-end GrindExtraction
+end DataCollection
