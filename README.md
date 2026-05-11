@@ -122,6 +122,7 @@ For every successful proof, we extract a JSON trace containing:
 **Data Preparation**
 1. We collect all the messages emitted by `aesop_collect` in the training data (we replace all instances of `aesop` in the training data with `aesop_collect`). We split this into a train set and a test set. These collections can be found in `aesop_data_split/train.json`, and `aesop_data_split/test.json`.
 2. We further split the messages into their individual rule applications, found in `aesop_data_split/train_pairs.json`, and `aesop_data_split/test_pairs.json`.
+
 **Training**
 These steps correspond to the python files marked `01` through `05` in `aesop_rule_ordering/`:
 1. We build a directed graph representing our training data. Each node represents a rule and an edge from node a to node b with weight w indicates that there are w instances in the training data in which rule a was `chosen` and rule b appeared in `allowedUnsafeRules`.
