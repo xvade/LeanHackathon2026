@@ -132,7 +132,7 @@ To leverage the extracted trace data, we trained a lightweight neural model desi
 
 **Training Strategy:**
 - **Objective**: The model is trained using Cross-Entropy Loss to maximize the score of the "Winning Spine" candidate within its original pool of alternatives.
-- **Efficiency Weighting**: We apply a weighting formula ($W = 1 / \sqrt{\text{total\_splits}}$) to the training loss. This incentivizes the model to prioritize decisions from shorter, more efficient proofs, effectively learning "shortcuts" over the native heuristic's often exhaustive search.
+- **Efficiency Weighting**: We apply a weighting formula ($W = 1 / \sqrt{\text{total \\_ splits}}$) to the training loss. This incentivizes the model to prioritize decisions from shorter, more efficient proofs, effectively learning "shortcuts" over the native heuristic's often exhaustive search.
 - **Evaluation**: We maintain a stable benchmark of 75 problems (balanced across Mathlib, Workbook, and Numina) that are strictly excluded from the training set to measure the model's generalization and split-reduction capabilities.
 
 
