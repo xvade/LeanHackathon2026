@@ -124,6 +124,7 @@ For every successful proof, we extract a JSON trace containing:
 2. We further split the messages into their individual rule applications, found in `aesop_data_split/train_pairs.json`, and `aesop_data_split/test_pairs.json`.
 
 **Training**
+
 These steps correspond to the python files marked `01` through `05` in `aesop_rule_ordering/`:
 1. We build a directed graph representing our training data. Each node represents a rule and an edge from node a to node b with weight w indicates that there are w instances in the training data in which rule a was `chosen` and rule b appeared in `allowedUnsafeRules`.
 2. We remove two-cycles by doing the following: wherever there is an edge from a to b with weight n and there is an edge from b to a with weight k, such that n > k, we replace both edges with a new edge from a to b that has weight n/k.
