@@ -104,7 +104,7 @@ For `grind`, we tested each theorem to see if the tactic could autonomously clos
 For `aesop`, we employed a similar verification protocol but introduced a refinement step: we first attempted to solve the goal using `simp`. If `simp` failed but `aesop` subsequently succeeded, the theorem was added to our collection. This filtering ensures that our dataset prioritizes non-trivial proofs where `aesop`'s search capabilities provide unique value beyond standard simplification, reflecting its internal strategy of attempting simplification before proceeding with more complex search heuristics.
 
 ### Aesop Trace Extraction
-
+Aesop trace extraction was performed with our `aesop_collect` tactic, which functions identically to `aesop` but when it closes the goal it additionally emits a message documenting the final set of rule applications that lead `aesop` to the goal, including the state at that application, the rule itself, and the other options that `aesop` had that it did not choose.
 
 ### Grind Trace Extraction
 We instrumented the `grind` tactic to capture the internal state and decision-making process at every "split" (branching point) during proof search. This instrumentation allows us to record the precisely timed "snapshots" of the prover's state.
@@ -119,6 +119,16 @@ For every successful proof, we extract a JSON trace containing:
 ## Training
 
 ### Aesop Training
+**Data Preparation**
+1. We collect all the messages emitted by `aesop_collect` in the training data (we replace all instances of `aesop` in the training data with `aesop_collect`). We split this into a train set and a test set. These collections can be found in `aesop_data_split/train.json`, and `aesop_data_split/test.json`.
+2. We further split the messages into their individual rule applications, found in `aesop_data_split/train_pairs.json`, and `aesop_data_split/test_pairs.json`.
+**Training**
+These steps correspond to the python files marked `01` through `05` in `aesop_rule_ordering/`:
+1. We build a directed graph representing our training data. Each node represents a rule and an edge from node a to node b with weight w indicates that there are w instances in the training data in which rule a was `chosen` and rule b appeared in `allowedUnsafeRules`.
+2. We remove two-cycles by doing the following: wherever there is an edge from a to b with weight n and there is an edge from b to a with weight k, such that n > k, we replace both edges with a new edge from a to b that has weight n/k.
+3. We remove the rest of the cycles from the graph by applying a custom ILP solver.
+4. We separate each connected component of the graph into layers. Nodes on layer 0 are nodes with no edges into them. Nodes on layer 1 have only edges from nodes on layer 0. Nodes on layer 2 have only edges from layers 0 and 1. And so on.
+5. We produce an override JSON based on the graph. If a rule's node is in layer n of a connected component with N layers, then we predict its override value as being (N - n) / (N + 1).
 
 
 ### Grind Training
