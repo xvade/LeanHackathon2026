@@ -6,7 +6,7 @@ This project focuses on enhancing Lean 4's automated tactics, specifically `grin
 
 ### Improved `grind` — `neural_grind`
 
-The `neural_grind` tactic replaces grind's native split-candidate heuristic with a lightweight MLP model (~74,500 parameters, <1ms inference) that ranks branching options by predicted proof efficiency.
+The `neural_grind` tactic replaces grind's native split-candidate heuristic with a lightweight MLP model (~1M parameters) that ranks branching options by predicted proof efficiency.
 
 **Import:**
 ```lean
@@ -44,7 +44,7 @@ python3 training/serve.py --model training/experiments/exp09_heuristics/model.pt
 | `GRIND_MARGIN_MILLI` | Minimum logit margin (milli-logits) required to trust model ranking |
 | `GRIND_DECISION_LOG` | Path to a JSONL file for per-decision diagnostic output |
 
-If the server is unavailable or `GRIND_NO_MODEL=1`, `neural_grind` silently falls back to grind's native heuristic. Proofs that close with stock `grind` will also close with `neural_grind`; the model only changes split ordering, not soundness. To use stock `grind`, simply call `grind` as usual — the two tactics are independent.
+If the server is unavailable or `GRIND_NO_MODEL=1`, `neural_grind` falls back to grind's native heuristic. Proofs that close with stock `grind` will also close with `neural_grind`; the model only changes split ordering, not soundness. To use stock `grind`, simply call `grind` as usual — the two tactics are independent.
 
 ---
 
