@@ -5,6 +5,10 @@ longer offline agreement with `grind`; the priority is whether real
 `neural_grind` improves real Lean compilation behavior compared with real
 `grind`.
 
+Generated benchmark outputs live under `training/benchmarks/case_results/` and
+are not part of the committed source branch. Recreate them from the benchmark
+scripts when needed.
+
 ## Goal
 
 Make `neural_grind` reliably better than `grind` on split-heavy proof search:

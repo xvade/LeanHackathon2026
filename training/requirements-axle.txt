@@ -1,0 +1,3 @@
+# Optional: required only for AXLE-backed theorem solving helpers such as
+# `training/solve_workbook.py` and `training/solve_grind.py`.
+axle

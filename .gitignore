@@ -36,6 +36,7 @@ lake-manifest.json
 scratch/
 training/*.jsonl
 training/benchmarks/timing_*.log
+training/benchmarks/case_results/
 training/data/*.jsonl
 training/data/clean/
 training/data/collected*.jsonl

@@ -5,6 +5,10 @@ Date: 2026-05-10
 This is the comprehensive handoff for the current `neural_grind` work. The
 active plan is `NEURAL_GRIND_PLAN.md`.
 
+Generated benchmark run directories under `training/benchmarks/case_results/`
+are intentionally not checked in. Re-run the benchmark scripts to recreate
+those outputs locally.
+
 The repo is intentionally dirty. Do not reset or revert unrelated changes. Some
 data files are generated artifacts, and some data-generation jobs may still be
 running or appending to source files. Prefer writing derived outputs under new
