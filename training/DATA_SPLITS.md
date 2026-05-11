@@ -41,15 +41,21 @@ The script:
 Use the combined clean file for future model training unless a specific
 experiment needs a narrower data source.
 
-For an existing experiment directory, train a clean model without overwriting
-the historical `model.pt` with:
+Train the canonical exp09 model from the combined clean file with:
 
 ```bash
-bash training/experiments/train_clean_model.sh exp08_num_pool_counts
+python training/experiments/exp09_heuristics/train.py \
+  --data training/data/clean/train_splits.jsonl \
+  --out training/experiments/exp09_heuristics/model.pt
 ```
 
-By default this writes `model_clean.pt` and `train_clean.log` inside the
-experiment directory.
+Then export native weights with:
+
+```bash
+python training/export_exp09_native.py \
+  --model training/experiments/exp09_heuristics/model.pt \
+  --out training/experiments/exp09_heuristics/model.native.bin
+```
 
 Current clean snapshot:
 
@@ -65,7 +71,5 @@ snapshot has no remaining benchmark goal fingerprints under this check.
 
 ## Current Caveat
 
-Historical models in `training/experiments/` were trained before this split was
-made explicit. Treat their benchmark results as historical diagnostics until
-the models are retrained from `training/data/clean/train_splits.jsonl` or from
-another explicitly benchmark-excluded dataset.
+The main branch keeps only the exp09 training/export path. Historical experiment
+variants live on the dedicated grind branch.

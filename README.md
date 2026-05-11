@@ -116,6 +116,7 @@ For every successful proof, we extract a JSON trace containing:
 - **Environmental Context**: A "Pretty-Printed" version of the local context and the internal state of the E-graph (the robot's "brain").
 - **Winning Spine**: We prune these traces to retain only the "Winning Spine"—the sequence of successful decisions that directly led to the proof, discarding any exploratory dead ends.
 
+<<<<<<< HEAD
 ## Training
 
 ### Aesop Training
@@ -133,6 +134,32 @@ These steps correspond to the python files marked `01` through `05` in `aesop_ru
 5. We produce an override JSON based on the graph. If a rule's node is in layer n of a connected component with N layers, then we predict its override value as being (N - n) / (N + 1).
 
 
+=======
+## Training
+
+The main branch keeps one grind training/export path:
+
+```bash
+python training/experiments/exp09_heuristics/train.py \
+  --data training/data/verified_splits.jsonl \
+  --out training/experiments/exp09_heuristics/model.pt
+
+python training/export_exp09_native.py \
+  --model training/experiments/exp09_heuristics/model.pt \
+  --out training/experiments/exp09_heuristics/model.native.bin
+
+c++ -DNEURAL_GRIND_STANDALONE -O3 -std=c++17 \
+  NeuralTactic/native/model.cpp \
+  -o training/experiments/exp09_heuristics/native_serve
+```
+
+Use `training/smoke_neural_grind.sh` for a local end-to-end check of training,
+native export, native inference, and the `neural_grind` tactic loop.
+
+### Aesop Training
+
+
+>>>>>>> f8e53fa (cleaned up branch in main, most moved to grind branch)
 ### Grind Training
 To leverage the extracted trace data, we trained a lightweight neural model designed to predict the optimal next step in a `grind` proof search.
 

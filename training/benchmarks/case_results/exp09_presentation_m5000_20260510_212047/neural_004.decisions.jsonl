@@ -1,3 +1,0 @@
-{"action":"model","reason":"override","numCandidates":1,"thresholdMilli":5000,"anchor":1295388278906860607,"marginMilli":1000000000}
-{"action":"fallback","reason":"below_margin","numCandidates":2,"thresholdMilli":5000,"anchor":7930415039209569240,"marginMilli":3986}
-{"action":"model","reason":"override","numCandidates":1,"thresholdMilli":5000,"anchor":14245791811297139292,"marginMilli":1000000000}

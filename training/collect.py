@@ -415,11 +415,10 @@ def run_batch(lean_file_str: str, log_file_str: str,
 
     env = os.environ.copy()
     env["GRIND_LOG"] = str(log_file)
-    # If GRIND_MODEL is set (model-guided RL collection), also expose GRIND_SERVE
-    # so the CollectTactic can find serve.py.  Defaults to training/serve.py
-    # alongside the model if not explicitly provided.
+    # If GRIND_MODEL is set, also expose GRIND_SERVE so CollectTactic can find
+    # a model server. Defaults to the exp09 server if not explicitly provided.
     if "GRIND_MODEL" in env and "GRIND_SERVE" not in env:
-        serve_default = Path(__file__).parent / "serve.py"
+        serve_default = Path(__file__).parent / "experiments" / "exp09_heuristics" / "serve.py"
         env["GRIND_SERVE"] = str(serve_default)
     # Set GRIND_PYTHON so Lean's subprocess uses the conda/venv python explicitly.
     # Also prepend to PATH as fallback for older code paths.

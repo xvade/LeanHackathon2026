@@ -36,6 +36,7 @@ lake-manifest.json
 scratch/
 training/*.jsonl
 training/benchmarks/timing_*.log
+training/benchmarks/case_results/
 training/data/*.jsonl
 training/data/clean/
 training/data/collected*.jsonl
@@ -44,7 +45,6 @@ training/data/raw/*.jsonl
 training/data/rl*/
 training/experiments/*/*.log
 training/experiments/*/model*.bin
-training/experiments/exp08_num_pool_counts/native_serve
 **/native_serve
 training/experiments/*/logs/
 training/experiments/*/outputs/

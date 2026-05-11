@@ -1,8 +1,8 @@
 /*
- * Native exp08 scorer for neural_grind.
+ * Native exp09 scorer for neural_grind.
  *
  * This is intentionally narrow: it implements the cheap numeric MLP used by
- * training/experiments/exp08_num_pool_counts.  It avoids Python in the tactic
+ * training/experiments/exp09_heuristics.  It avoids Python in the tactic
  * loop while preserving the same line protocol result shape as serve.py:
  *
  *   "<chosen-anchor> <top1-top2-margin-milli>"
@@ -238,14 +238,14 @@ static std::vector<float> make_features(
     x[i++] = static_cast<float>(same_cases) / n;
     x[i++] = input_source_fraction;
 
-    // exp08 included three grindState count features.  SplitPolicy currently
+    // exp09 includes three grindState count features. SplitPolicy currently
     // sends an empty grindState, so these remain zero and match the Python
     // server's behavior.
     x[i++] = 0.0f;
     x[i++] = 0.0f;
     x[i++] = 0.0f;
 
-    // new heuristics (exp09)
+    // exp09 heuristic features
     x[i++] = c.tryPostpone ? 1.0f : 0.0f;
     int var = variant_index(c.variant);
     for (int j = 0; j < 3; ++j) x[i++] = (var == j) ? 1.0f : 0.0f;
@@ -300,14 +300,12 @@ static bool ensure_weights() {
     }
     paths.emplace_back("../training/experiments/exp09_heuristics/model.native.bin");
     paths.emplace_back("training/experiments/exp09_heuristics/model.native.bin");
-    paths.emplace_back("../training/experiments/exp08_num_pool_counts/model.native.bin");
-    paths.emplace_back("training/experiments/exp08_num_pool_counts/model.native.bin");
 
     for (const auto& path : paths) {
         if (load_weights_from(path.c_str(), g_weights)) return true;
     }
 
-    std::cerr << "[neural_grind] native exp08 weights not found; set GRIND_NATIVE_WEIGHTS\n";
+    std::cerr << "[neural_grind] native exp09 weights not found; set GRIND_NATIVE_WEIGHTS\n";
     return false;
 }
 
@@ -335,7 +333,7 @@ static float score_one(const Weights& w, const std::vector<float>& x) {
     return out;
 }
 
-static std::string choose_exp08(const char* gf_json, const char* cands_json) {
+static std::string choose_exp09(const char* gf_json, const char* cands_json) {
     if (!ensure_weights()) return "0 0";
 
     GoalFeatures goal = parse_goal(gf_json);
@@ -433,20 +431,20 @@ int main(int argc, char** argv) {
             std::cout << "0 0" << std::endl;
             continue;
         }
-        std::cout << choose_exp08(goal.c_str(), cands.c_str()) << std::endl;
+        std::cout << choose_exp09(goal.c_str(), cands.c_str()) << std::endl;
     }
     return 0;
 }
 
 #else
 
-extern "C" LEAN_EXPORT lean_obj_res lean_exp08_choose(
+extern "C" LEAN_EXPORT lean_obj_res lean_exp09_choose(
     b_lean_obj_arg gf_json,
     b_lean_obj_arg cands_json
 ) {
     const char* gf = lean_string_cstr(gf_json);
     const char* cands = lean_string_cstr(cands_json);
-    std::string result = choose_exp08(gf, cands);
+    std::string result = choose_exp09(gf, cands);
     return lean_mk_string(result.c_str());
 }
 

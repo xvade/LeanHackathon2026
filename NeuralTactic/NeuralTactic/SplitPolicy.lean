@@ -3,14 +3,14 @@
 
 At each split decision `neuralSplitNext`:
   1. Gets the candidate pool via `getSplitCandidateAnchors` (keeping the modified goal state).
-  2. Sends goalFeatures + candidates to serve.py via a persistent subprocess.
+  2. Sends goalFeatures + candidates to a persistent model subprocess.
   3. Uses the model's chosen anchor to call `splitCore` directly.
   4. Falls back to grind's native split selection if the model is unavailable
      or below the configured margin threshold.
 
 Environment variables:
   GRIND_MODEL — path to the PyTorch checkpoint (.pt)
-  GRIND_SERVE — path to training/serve.py
+  GRIND_SERVE — path to the Python server or native inference executable
   GRIND_SERVE_NATIVE — set to 1 when GRIND_SERVE is a native executable
   GRIND_NO_MODEL — set to 1 to skip model inference and use only the fallback
   GRIND_MARGIN_MILLI — require model top-1/top-2 logit margin in milli-logits
