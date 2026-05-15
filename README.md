@@ -3,6 +3,60 @@
 This branch focuses on enhancing Lean 4's `grind` tactic through
 neural-guided split ordering, trace extraction, and efficiency-aware training.
 
+## Two parallel directions in this repo
+
+1. **Branch-cost pipeline** (current focus). Counterfactual data
+   collection (`training/collect_branch_costs.py`) labels each
+   (decision, candidate) pair with measured `splits_to_close`, then
+   trains a pairwise ranker (`training/experiments/exp10_branch_cost/`).
+   Labels are *not* derived from grind's heuristic, so the model can in
+   principle exceed it. Runs end-to-end on a single laptop. Quick
+   start in [Branch-cost quick start](#branch-cost-quick-start) below.
+2. **Imitation pipeline** (older). Trains to predict grind's own choice
+   at each decision. Still works, but ceiling-limited to matching grind.
+   Documented in the **Extraction / Training** sections further down.
+
+Both pipelines share the `NeuralTactic/` runtime tactic — only the
+training objective and data collection differ.
+
+## Branch-cost quick start
+
+Assumes a Lean 4 toolchain (`leanprover/lean4:v4.30.0-rc2`) and a
+Python 3.10+ environment.
+
+```bash
+# A. Build NeuralTactic once (required by both pipelines)
+cd NeuralTactic && lake build && cd ..
+
+# B. Sample a plan from the committed benchmark traces
+python training/make_plan_benchmark.py \
+  --trace-jsonl training/data/clean/split_active_benchmark_traces_normalized.jsonl \
+  --out training/data/run/sample_plan.jsonl \
+  --per-stratum 20
+
+# C. Collect branch costs (force every candidate at every multi-cand decision)
+python training/collect_branch_costs.py \
+  --sample-plan training/data/run/sample_plan.jsonl \
+  --benchmark-file training/benchmarks/split_active_timing_neural_grind.lean \
+  --project NeuralTactic \
+  --out training/data/run/branch_costs.jsonl \
+  --timeout 90
+
+# D. Analyse — viability report stratified by pool size
+python training/analyze_costs.py \
+  --in training/data/run/branch_costs.jsonl \
+  --out training/data/run/report.md
+
+# E. Train pairwise ranker on the collected labels
+python training/experiments/exp10_branch_cost/train.py \
+  --data training/data/run/branch_costs.jsonl \
+  --out training/experiments/exp10_branch_cost/model.pt
+```
+
+`training/run_pipeline_local.sh` orchestrates A→D in one shot. For
+larger sample plans (e.g., from FineLean source files), see
+`training/make_plan_finelean.py`.
+
 ## Device Setup
 
 This device already has a usable conda environment for neural-grind training

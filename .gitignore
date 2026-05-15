@@ -53,3 +53,20 @@ training/experiments/*/results/
 training/experiments/results/
 training/training/
 venv/
+
+# HPC-specific scaffolding (klone SLURM array path).
+# The pipeline runs end-to-end on a laptop; slurm/ is an optional speedup
+# that lives only on the dev machine, never in the GitHub repo.
+slurm/
+
+# Generated data archives (large, regenerable)
+grind_data_archive/
+training/data/finelean_corpus.jsonl
+training/data/finelean_splits.jsonl
+training/data/finelean_splits_partial.jsonl
+training/data/herald_proofs.jsonl
+training/data/lean_workbook.json
+training/data/numina_lean.jsonl
+training/data/numina_splits.jsonl
+training/data/workbook_splits.jsonl
+training/data/clean/
