@@ -6,7 +6,7 @@
    "name": "aesop_with_overrides",
    "manifestFile": "lake-manifest.json",
    "inherited": false,
-   "dir": "../aesop_with_overrides",
+   "dir": "../AesopImprovement/aesop_with_overrides",
    "configFile": "lakefile.toml"},
   {"url": "https://github.com/leanprover-community/mathlib4",
    "type": "git",

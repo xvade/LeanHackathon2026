@@ -3,7 +3,7 @@ defaultTargets = ["AesopWithOverrides"]
 
 [[require]]
 name = "mathlib"
-path = "../NeuralTactic/.lake/packages/mathlib"
+path = "../../NeuralTactic/.lake/packages/mathlib"
 
 [[lean_lib]]
 name = "AesopWithOverrides"
