@@ -1,0 +1,16 @@
+name = "aesop_audit"
+
+# Reuse the already-built Mathlib from the NeuralTactic project.
+# Its .lake/packages/ tree has all transitive deps (Aesop, Batteries, …)
+# pre-compiled, so `lake build` here only compiles Main.lean itself.
+[[require]]
+name = "mathlib"
+path = "../../NeuralTactic/.lake/packages/mathlib"
+
+[[lean_exe]]
+name = "aesop_audit"
+root = "Main"
+
+# Elaboration-time collector: `lake build AesopAudit` writes aesop_mathlib_rules.jsonl
+[[lean_lib]]
+name = "AesopAudit"
